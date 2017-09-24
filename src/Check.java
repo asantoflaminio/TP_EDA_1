@@ -1,3 +1,4 @@
+package AVL;
 
 public class Check {
 
@@ -15,4 +16,3 @@ public class Check {
 		value = b;
 	}
 }
-

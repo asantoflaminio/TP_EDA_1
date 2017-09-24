@@ -1,3 +1,4 @@
+package AVL;
 
 import java.util.Comparator;
 import java.util.Random;
@@ -18,6 +19,10 @@ public class BlockChain<T> {
 		return last;
 	}
 
+	public int getZeros() {
+		return zeros;
+	}
+
 	public BlockChain<T> add(AvlOperation<T> operation) {
 		AvlTree<T> avl;
 		Data<T> data;
@@ -27,13 +32,17 @@ public class BlockChain<T> {
 		else
 			avl = new AvlTree<T>(cmp);
 
-		data = new Data<T>(operation, operation.apply(avl));
-		last = addIterative(data);
-		avl.print(); // Sacar
+		data = new Data<T>(operation, operation.apply(avl), avl);
+		last = addBlock(data);
+
+		last.print();
+		// No esta guardando en la blockchain el avl de forma correcta
+		// siempre guarda el ultimo avl
+
 		return this;
 	}
 
-	public Block<T> addIterative(Data<T> data) {
+	private Block<T> addBlock(Data<T> data) {
 		return new Block<T>(new Random().nextInt(10000), data, last);
 	}
 
@@ -43,17 +52,17 @@ public class BlockChain<T> {
 		private static int lastPrevHash;
 		private int index;
 		private int nonce;
-		private Data<T> data;
-		private int hash;
 		private int prevHash;
+		private int hash;
+		private Data<T> data;
 		private Block<T> prevBlock;
 
 		public Block(int nonce, Data<T> data, Block<T> prevBlock) {
 			this.index = ++lastIndex;
 			this.nonce = nonce;
-			this.data = data;
-			this.hash = hash();
 			this.prevHash = lastPrevHash;
+			this.hash = generateHash(index, nonce, prevHash, data);
+			this.data = data;
 			this.prevBlock = prevBlock;
 			Block.lastPrevHash = hash;
 		}
@@ -82,10 +91,19 @@ public class BlockChain<T> {
 			return prevBlock;
 		}
 
-		public int hash() {
+		public int generateHash(int index, int nonce, int prevHash, Data<T> data) {
 			return 1; // SHA256
 		}
+
+		// Para probar, despues se cambia
+		public void print() {
+			System.out.println("Block index " + this.index);
+			System.out.println("Avl Tree:");
+			this.data.getAvl().print(); // Si quieren probar el draw de Ale poner .draw() pero abre una ventana por cada operacion
+			System.out.println(data);
+			System.out.println("--------------------");
+		}
+
 	}
 
 }
-

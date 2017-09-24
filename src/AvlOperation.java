@@ -1,3 +1,4 @@
+package AVL;
 
 public abstract class AvlOperation<T> extends Operation<T> {
 
@@ -11,6 +12,10 @@ public abstract class AvlOperation<T> extends Operation<T> {
 	public T getElem() {
 		return elem;
 	}
-
-	public abstract AvlTree<T> apply(AvlTree<T> avl);
+	
+	public BlockChain<T> apply(BlockChain<T> blockChain) {
+		return blockChain.add(this);
+	}
+	
+	public abstract boolean apply(AvlTree<T> avl);
 }

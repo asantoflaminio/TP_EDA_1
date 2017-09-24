@@ -1,29 +1,43 @@
+package AVL;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.NoSuchElementException;
 
 public class AvlTree<T> {
 
 	private Node<T> root;
 	private Comparator<T> cmp;
-	int totalnodes = 0; //keeps track of the inorder number for horiz. scaling 
-    int maxheight=0;//keeps track of the depth of the tree for vert. scaling
-
+	private int totalnodes = 0; //keeps track of the inorder number for horiz. scaling 
+    private int maxheight=0;
+    
 	public AvlTree(Comparator<T> cmp) {
 		this.cmp = cmp;
 	}
-
-
-	public AvlTree<T> insert(T value) {
-		this.root = add(this.root, value);
-		return this;
+	
+	public int getTotalNodes() {
+		return totalnodes;
+	}
+	
+	public int getMaxHeight() {
+		return maxheight;
 	}
 
-	public Node<T> getRoot() {
+	public Node<T> getRoot(){
 		return root;
 	}
+	
+ 	// Debatir que hacer si manejar la excepcion o retornar de otra forma
 
+	public boolean insert(T value) {
+		try {
+			this.root = add(this.root, value);
+			return true;
+		} catch (EqualsElementException e) {
+			return false;
+		}
+	}
 
 	private Node<T> add(Node<T> current, T elem) {
 		if (current == null) {
@@ -90,9 +104,9 @@ public class AvlTree<T> {
 		return current;
 	}
 
-	public AvlTree<T> remove(T t) {
+	public boolean remove(T t) {
 		this.root = delete(this.root, t);
-		return this;
+		return true; // Debe tirar una excepcion cuando intento remover un nodo inexistente
 	}
 
 	private Node<T> delete(Node<T> current, T t) {
@@ -402,7 +416,9 @@ public class AvlTree<T> {
 	}
 
 	public boolean contains(T key) {
-		return contains(root, key);
+		if (contains(root, key))
+			return true;
+		return false;
 	}
 
 	private boolean contains(Node<T> node, T key) {
@@ -518,6 +534,4 @@ public class AvlTree<T> {
 	      }
 	    }
 	
-	
-
 }
