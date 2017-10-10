@@ -144,6 +144,27 @@ public class BlockChain<T> {
 			System.out.println(validate());
 		} else if (command.substring(0, 7).toLowerCase().equals("modify ")) {
 			
+			boolean flag = true;
+			int i = 7;
+			int acu = 0;
+			while(flag && command.charAt(i) != ' ') {
+				if(command.charAt(i) < '0' || command.charAt(i) > '9') {
+					flag = false;
+				}
+				else {
+					acu*= 10;
+					acu += command.charAt(i) - '0';
+				}
+				i++;
+			}
+			
+			if(acu > this.last.index || !flag) {
+				System.out.println("Los datos ingresados no son validos");
+			}
+			else {
+				modify(acu, command.substring(i));
+			}
+			
 		} else {
 			System.out.println("NOT VALID COMMAND");
 		}
@@ -189,8 +210,8 @@ public class BlockChain<T> {
 		return validate(current.prevBlock, s);
 	}
 
-	private void modify() {
-
+	private void modify(int n, String file) {
+		System.out.println(n + " " + file);
 	}
 
 }
