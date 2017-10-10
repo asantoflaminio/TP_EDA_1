@@ -39,13 +39,12 @@ public class List<T> implements Iterable<T> {
 		return new MyListIterator<T>(first);
 	}
 
-	public class MyListIterator<T> implements Iterator<T> {
+	private class MyListIterator<T> implements Iterator<T> {
+		
 		private Node<T> next;
-		private Node<T> lastReturned;
 
 		public MyListIterator(Node<T> first) {
 			next = first;
-			lastReturned = null;
 		}
 
 		public boolean hasNext() {
@@ -57,7 +56,6 @@ public class List<T> implements Iterable<T> {
 				throw new NoSuchElementException();
 
 			T value = next.value;
-			lastReturned = next;
 			next = next.next;
 			return value;
 
