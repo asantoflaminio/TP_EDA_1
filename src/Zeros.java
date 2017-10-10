@@ -2,20 +2,14 @@ package AVL;
 
 import java.util.Comparator;
 
-public class Zeros<T> extends Operation<T> {
+public class Zeros<T> {
+	private final int zeros;
 
-	private Comparator<T> cmp;
-	private int elem;
-
-	public Zeros(String op, int elem, Comparator<T> cmp) {
-		super(op);
-		this.elem = elem;
-		this.cmp = cmp;
+	public Zeros(int zeros) {
+		this.zeros = zeros;
 	}
 
-	@Override
-	public BlockChain<T> apply(BlockChain<T> blockChain) {
-		return new BlockChain<T>(elem, cmp);
+	public BlockChain createBlockchain(Comparator cmp, FromString fs) {
+		return new BlockChain<T>(this.zeros, cmp, fs);
 	}
-
 }

@@ -4,8 +4,12 @@ public class Check {
 
 	private Boolean value;
 
-	public Check() {
+	public Check(){
 		this.value = true;
+	}
+	
+	public Check(boolean value) {
+		this.value = value;
 	}
 
 	public Boolean getValue() {

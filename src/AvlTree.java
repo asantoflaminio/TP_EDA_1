@@ -2,486 +2,347 @@ package AVL;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Deque;
-import java.util.NoSuchElementException;
+import java.util.LinkedList;
 
 public class AvlTree<T> {
 
 	private Node<T> root;
 	private Comparator<T> cmp;
-	private int totalnodes = 0; //keeps track of the inorder number for horiz. scaling 
-    private int maxheight=0;
-    
+
 	public AvlTree(Comparator<T> cmp) {
 		this.cmp = cmp;
 	}
-	
-	public int getTotalNodes() {
-		return totalnodes;
-	}
-	
-	public int getMaxHeight() {
-		return maxheight;
-	}
 
-	public Node<T> getRoot(){
-		return root;
-	}
-	
- 	// Debatir que hacer si manejar la excepcion o retornar de otra forma
+	private static class Node<T> {
 
-	public boolean insert(T value) {
-		try {
-			this.root = add(this.root, value);
-			return true;
-		} catch (EqualsElementException e) {
-			return false;
+		T value;
+		Node<T> leftTree;
+		Node<T> rightTree;
+		List<Integer> blocksModified;
+		int height;
+
+		public Node(T value) {
+			this.value = value;
+			this.height = 0;
+			this.leftTree = null;
+			this.rightTree = null;
+			this.blocksModified = new List<Integer>();
 		}
+
 	}
 
-	private Node<T> add(Node<T> current, T elem) {
+	/**
+	 * 
+	 * @param elem
+	 *            Elemento a insertar
+	 * @param blockIndex
+	 *            Indice del bloque que va a modificar el arbol
+	 * @see add
+	 * 
+	 *      Es la función wrapper que se encarga de agregar un elemento al árbol
+	 */
+
+	public boolean insert(T elem, int blockIndex) {
+		this.root = add(this.root, elem, blockIndex);
+		return true; // SACAR
+	}
+
+	/**
+	 * 
+	 * @param current
+	 *            Nodo en cuestión de la función recursiva
+	 * @param elem
+	 *            Elemento a insertar
+	 * @param blockIndex
+	 *            Indice del bloque que va a modificar el árbol
+	 * @return Retorna el nodo en cuestión see getHeight, balanceTree
+	 */
+
+	private Node<T> add(Node<T> current, T elem, int blockIndex) {
 		if (current == null) {
-			return new Node<T>(elem);
+			Node<T> node = new Node<T>(elem);
+			node.blocksModified.add(blockIndex);
+			return node;
 		}
-
-		if (this.cmp.compare(current.value, elem) == 0) {
-			throw new EqualsElementException("El elemento al que se quiere acceder ya esta ingresado");
-		} else if (this.cmp.compare(current.value, elem) > 0) {
-			current.leftTree = add(current.leftTree, elem);
-			if (current.rightTree != null) {
-				current.height = Math.max(current.leftTree.height, current.rightTree.height) + 1;
-			} else {
-				current.height = current.leftTree.height + 1;
-			}
-			if (current.leftTree.height >= 1) {
-				if (current.rightTree == null) {
-					if (this.cmp.compare(current.leftTree.value, elem) > 0) {
-						Node<T> aux = rotateRight(current);
-						return aux;
-					} else if (this.cmp.compare(current.leftTree.value, elem) < 0) {
-						Node<T> aux = rotateRightLeft(current);
-						return aux;
-					}
-				} else if (current.rightTree.height + 1 < current.leftTree.height) {
-					if (this.cmp.compare(current.leftTree.value, elem) > 0) {
-						Node<T> aux = rotateRight(current);
-						return aux;
-					} else if (this.cmp.compare(current.leftTree.value, elem) < 0) {
-						Node<T> aux = rotateRightLeft(current);
-						return aux;
-					}
-				}
-			}
-			return current;
-		} else if (this.cmp.compare(current.value, elem) < 0) {
-			current.rightTree = add(current.rightTree, elem);
-			if (current.leftTree != null) {
-				current.height = Math.max(current.leftTree.height, current.rightTree.height) + 1;
-			} else {
-				current.height = current.rightTree.height + 1;
-			}
-			if (current.rightTree.height >= 1) {
-				if (current.leftTree == null) {
-					if (this.cmp.compare(current.rightTree.value, elem) > 0) {
-						Node<T> aux = rotateLeftRight(current);
-						return aux;
-					} else if (this.cmp.compare(current.rightTree.value, elem) < 0) {
-						Node<T> aux = rotateLeft(current);
-						return aux;
-					}
-				} else if (current.leftTree.height + 1 < current.rightTree.height) {
-					if (this.cmp.compare(current.rightTree.value, elem) > 0) {
-						Node<T> aux = rotateLeftRight(current);
-						return aux;
-					} else if (this.cmp.compare(current.rightTree.value, elem) < 0) {
-						Node<T> aux = rotateLeft(current);
-						return aux;
-					}
-				}
-			}
-			return current;
-		}
+		Node<T> auxLeft = current.leftTree;
+		Node<T> auxRight = current.rightTree;
+		if (cmp.compare(current.value, elem) == 0)
+			return null;
+		if (cmp.compare(current.value, elem) > 0)
+			current.leftTree = add(current.leftTree, elem, blockIndex);
+		else
+			current.rightTree = add(current.rightTree, elem, blockIndex);
+		current.height = getHeight(current);
+		current = balanceTree(current, blockIndex);
+		if (!sameSons(auxLeft, auxRight, current))
+			current.blocksModified.add(blockIndex);
 		return current;
 	}
 
-	public boolean remove(T t) {
-		this.root = delete(this.root, t);
-		return true; // Debe tirar una excepcion cuando intento remover un nodo inexistente
-	}
+	/**
+	 * 
+	 * @param left
+	 *            Hijo izquierdo a comparar
+	 * @param right
+	 *            Hijo derecho a comparar
+	 * @param current
+	 *            Nodo en cuestion al cual compararle los hijos
+	 * @return Retorna un booleano que dice si los hijos eran iguales o alguno
+	 *         cambio
+	 */
 
-	private Node<T> delete(Node<T> current, T t) {
-		if (current == null) {
-			return null;
-		}
-		if (this.cmp.compare(current.value, t) == 0) {
-			if (current.leftTree == null && current.rightTree == null) {
-				return null;
-			} else if (current.leftTree == null) {
-				return current.rightTree;
-			} else if (current.rightTree == null) {
-				return current.leftTree;
-			}
-			Node<T> aux;
-			if (current.leftTree.height > current.rightTree.height) {
-				aux = getRightest(current.leftTree);
-				if (this.cmp.compare(aux.value, current.leftTree.value) == 0 && current.leftTree.leftTree == null) {
-					aux.leftTree = aux.leftTree.leftTree;
-				} else {
-					aux.leftTree = current.leftTree;
-				}
-				aux.rightTree = current.rightTree;
-				aux.leftTree = balanceRight(aux.leftTree);
-			} else {
-				aux = getLeftest(current.rightTree);
-				if (this.cmp.compare(aux.value, current.rightTree.value) == 0) {
-					aux.rightTree = current.rightTree.rightTree;
-				} else {
-					aux.rightTree = current.rightTree;
-				}
-				aux.leftTree = current.leftTree;
-				aux.rightTree = balanceLeft(aux.rightTree);
-			}
-			if (aux.rightTree == null) {
-				aux.height = aux.leftTree.height + 1;
-			} else if (aux.leftTree == null) {
-				aux.height = aux.rightTree.height + 1;
-			} else {
-				aux.height = Math.max(aux.leftTree.height, aux.rightTree.height) + 1;
-			}
-			return aux;
-		} else if (this.cmp.compare(current.value, t) < 0) {
-			current.rightTree = delete(current.rightTree, t);
-			if (current.rightTree == null && current.leftTree == null) {
-				current.height = 0;
-				return current;
-			} else if (current.rightTree == null) {
-
-				if (current.leftTree.height < 1) {
-					current.height = current.leftTree.height + 1;
-					return current;
-				}
-
-				if (current.leftTree.leftTree != null) {
-					if (current.leftTree.rightTree == null
-							|| current.leftTree.leftTree.height > current.leftTree.rightTree.height) {
-						return rotateRight(current);
-					} else if (current.leftTree.rightTree.height > current.leftTree.leftTree.height) {
-						return rotateRightLeft(current);
-					} else {
-						Node<T> aux = current.leftTree;
-						current.leftTree = aux.rightTree;
-						aux.rightTree = current;
-						current.height = current.leftTree.height + 1;
-						aux.height = Math.max(aux.leftTree.height, aux.rightTree.height) + 1;
-						return aux;
-					}
-				} else {
-					return rotateRightLeft(current);
-				}
-
-			} else if (current.leftTree == null) {
-				current.height = current.rightTree.height + 1;
-				return current;
-			} else {
-
-				if (current.leftTree.height > current.rightTree.height + 1) {
-					if (current.leftTree.leftTree != null) {
-						if (current.leftTree.rightTree == null
-								|| current.leftTree.leftTree.height > current.leftTree.rightTree.height) {
-							return rotateRight(current);
-						} else if (current.leftTree.rightTree.height > current.leftTree.leftTree.height) {
-							return rotateRightLeft(current);
-						} else {
-							Node<T> aux = current.leftTree;
-							current.leftTree = aux.rightTree;
-							aux.rightTree = current;
-							current.height = Math.max(current.leftTree.height, current.rightTree.height) + 1;
-							aux.height = Math.max(aux.leftTree.height, aux.rightTree.height) + 1;
-							return aux;
-						}
-					}
-				}
-
-				current.height = Math.max(current.leftTree.height, current.rightTree.height) + 1;
-				return current;
-			}
-		}
-
-		else {
-
-			current.leftTree = delete(current.leftTree, t);
-			if (current.rightTree == null && current.leftTree == null) {
-				current.height = 0;
-				return current;
-			} else if (current.leftTree == null) {
-				if (current.rightTree.height < 1) {
-					current.height = current.rightTree.height + 1;
-					return current;
-				} else {
-					if (current.rightTree.rightTree != null) {
-						if (current.rightTree.leftTree == null
-								|| current.rightTree.rightTree.height > current.rightTree.leftTree.height) {
-							return rotateLeft(current);
-						} else if (current.rightTree.leftTree.height > current.rightTree.rightTree.height) {
-							return rotateLeftRight(current);
-						} else {
-							Node<T> aux = current.rightTree;
-							current.rightTree = aux.leftTree;
-							aux.leftTree = current;
-							current.height = current.rightTree.height + 1;
-							aux.height = Math.max(aux.leftTree.height, aux.rightTree.height) + 1;
-							return aux;
-						}
-					} else {
-						return rotateLeftRight(current);
-					}
-				}
-			} else if (current.rightTree == null) {
-				current.height = current.leftTree.height + 1;
-				return current;
-			} else {
-				if (current.leftTree.height + 1 < current.rightTree.height) {
-					if (current.rightTree.rightTree != null) {
-						if (current.rightTree.leftTree == null
-								|| current.rightTree.rightTree.height > current.rightTree.leftTree.height) {
-							return rotateLeft(current);
-						} else if (current.rightTree.leftTree.height > current.rightTree.rightTree.height) {
-							return rotateLeftRight(current);
-						} else {
-							Node<T> aux = current.rightTree;
-							current.rightTree = aux.leftTree;
-							aux.leftTree = current;
-							current.height = Math.max(current.rightTree.height, current.leftTree.height) + 1;
-							aux.height = Math.max(aux.leftTree.height, aux.rightTree.height) + 1;
-							return aux;
-						}
-					} else {
-						return rotateLeftRight(current);
-					}
-				}
-				current.height = Math.max(current.leftTree.height, current.rightTree.height) + 1;
-				return current;
-			}
-		}
-	}
-
-	private Node<T> getRightest(Node<T> c) {
-		if (c == null) {
-			return null;
-		}
-		if (c.rightTree == null) {
-			return c;
-		}
-		if (c.leftTree == null) {
-			c.height--;
-		} else {
-			c.height = Math.max(c.leftTree.height + 1, c.rightTree.height);
-		}
-		if (c.rightTree.rightTree == null) {
-			Node<T> aux = c.rightTree;
-			c.rightTree = null;
-			return aux;
-		}
-		return getRightest(c.rightTree);
-	}
-
-	private Node<T> getLeftest(Node<T> c) {
-		if (c == null) {
-			return null;
-		}
-		if (c.leftTree == null) {
-			return c;
-		}
-		if (c.rightTree == null) {
-			c.height--;
-		} else {
-			c.height = Math.max(c.leftTree.height, c.rightTree.height + 1);
-		}
-		if (c.leftTree.leftTree == null) {
-			Node<T> aux = c.leftTree;
-			c.leftTree = null;
-			return aux;
-		}
-		return getLeftest(c.leftTree);
-	}
-
-	private Node<T> balanceLeft(Node<T> current) {
-		if (current == null) {
-			return null;
-		}
-		if (current.height < 2) {
-			return current;
-		}
-		current.leftTree = balanceLeft(current.leftTree);
-
-		if (current.leftTree == null) {
-			if (current.rightTree.rightTree != null) {
-				if (current.rightTree.leftTree == null
-						|| current.rightTree.leftTree.height < current.rightTree.rightTree.height) {
-					return rotateLeft(current);
-				} else if (current.rightTree.leftTree.height > current.rightTree.rightTree.height) {
-					return rotateLeftRight(current);
-				} else {
-					Node<T> aux = current.rightTree;
-					current.rightTree = aux.leftTree;
-					aux.leftTree = current;
-					current.height = current.rightTree.height + 1;
-					aux.height = Math.max(aux.leftTree.height, aux.rightTree.height) + 1;
-					return aux;
-				}
-			} else {
-				return rotateLeftRight(current);
-			}
-		}
-		if (current.leftTree.height < current.rightTree.height + 1) {
-			if (current.rightTree.rightTree != null) {
-				if (current.rightTree.leftTree == null
-						|| current.rightTree.rightTree.height > current.rightTree.leftTree.height) {
-					return rotateLeft(current);
-				} else if (current.rightTree.leftTree.height > current.rightTree.rightTree.height) {
-					return rotateLeftRight(current);
-				} else {
-					Node<T> aux = current.rightTree;
-					current.rightTree = aux.leftTree;
-					aux.leftTree = current;
-					current.height = Math.max(current.rightTree.height, current.leftTree.height) + 1;
-					aux.height = Math.max(aux.leftTree.height, aux.rightTree.height) + 1;
-					return aux;
-				}
-			} else {
-				return rotateLeftRight(current);
-			}
-		}
-		current.height = Math.max(current.leftTree.height, current.rightTree.height) + 1;
-		return current;
-	}
-
-	private Node<T> balanceRight(Node<T> current) {
-		if (current == null) {
-			return null;
-		}
-		if (current.height < 2) {
-			return current;
-		} else if (current.rightTree == null) {
-
-			if (current.leftTree.height < 1) {
-				current.height = current.leftTree.height + 1;
-				return current;
-			}
-
-			if (current.leftTree.leftTree != null) {
-				if (current.leftTree.rightTree == null
-						|| current.leftTree.leftTree.height > current.leftTree.rightTree.height) {
-					return rotateRight(current);
-				} else if (current.leftTree.rightTree.height > current.leftTree.leftTree.height) {
-					return rotateRightLeft(current);
-				} else {
-					Node<T> aux = current.leftTree;
-					current.leftTree = aux.rightTree;
-					aux.rightTree = current;
-					current.height = current.leftTree.height + 1;
-					aux.height = Math.max(aux.leftTree.height, aux.rightTree.height) + 1;
-					return aux;
-				}
-			} else {
-				return rotateRightLeft(current);
-			}
-
-		} else if (current.leftTree == null) {
-			current.height = current.rightTree.height + 1;
-			return current;
-		} else {
-
-			if (current.leftTree.height > current.rightTree.height + 1) {
-				if (current.leftTree.leftTree != null) {
-					if (current.leftTree.rightTree == null
-							|| current.leftTree.leftTree.height > current.leftTree.rightTree.height) {
-						return rotateRight(current);
-					} else if (current.leftTree.rightTree.height > current.leftTree.leftTree.height) {
-						return rotateRightLeft(current);
-					} else {
-						Node<T> aux = current.leftTree;
-						current.leftTree = aux.rightTree;
-						aux.rightTree = current;
-						current.height = Math.max(current.leftTree.height, current.rightTree.height) + 1;
-						aux.height = Math.max(aux.leftTree.height, aux.rightTree.height) + 1;
-						return aux;
-					}
-				}
-			}
-
-			current.height = Math.max(current.leftTree.height, current.rightTree.height) + 1;
-			return current;
-		}
-	}
-
-	public boolean contains(T key) {
-		if (contains(root, key))
+	private boolean sameSons(Node<T> left, Node<T> right, Node<T> current) {
+		if (left == current.leftTree && right == current.rightTree)
 			return true;
 		return false;
 	}
 
-	private boolean contains(Node<T> node, T key) {
-		if (node == null)
-			return false;
+	/**
+	 * 
+	 * @param elem
+	 *            Elemento en cuestion a eliminar
+	 * @param blockIndex
+	 *            Indice del bloque que va a modificar el árbol
+	 * @return Retorna un booleano para indicar si pudo realizar la operación o no
+	 * @see delete Es la función wrapper de la función recursiva delete
+	 */
 
-		int aux = cmp.compare(node.value, key);
-		if (aux < 0)
-			return contains(node.rightTree, key);
-		else if (aux > 0)
-			return contains(node.leftTree, key);
-
-		return true;
+	public boolean remove(T elem, int blockIndex) {
+		Check flag = new Check();
+		root = delete(this.root, elem, blockIndex, flag);
+		if (flag.getValue())
+			return true;
+		return false;
 	}
 
-	private Node<T> rotateRight(Node<T> big) {
+	/**
+	 * 
+	 * @param current
+	 *            Nodo en cuestión de la función recursiva
+	 * @param elem
+	 *            Elemento a eliminar del árbol
+	 * @param blockIndex
+	 *            Indice del bloque que va a modificar el árbol
+	 * @param flag
+	 *            Indica si la operación se realizó o no
+	 * @return Retorna el nodo en cuestión
+	 */
+
+	private Node<T> delete(Node<T> current, T elem, int blockIndex, Check flag) {
+		if (current == null)
+			return null;
+
+		Node<T> auxLeft = current.leftTree;
+		Node<T> auxRight = current.rightTree;
+		if (cmp.compare(current.value, elem) == 0) {
+			flag.setValue(true);
+			if (noSons(current)) {
+				return null;
+			} else if (oneSon(current)) {
+				if (current.leftTree != null)
+					return current.leftTree;
+				else
+					return current.rightTree;
+			} else {
+				Node<T> result = getMaxLeaf(current.leftTree);
+				current.leftTree = delete(current.leftTree, result.value, blockIndex, flag);
+				if (!sameSons(auxLeft, auxRight, result)) {
+					result.blocksModified.add(blockIndex);
+				}
+				result.leftTree = current.leftTree;
+				result.rightTree = current.rightTree;
+				result.height = getHeight(result);
+				result = balanceTree(result, blockIndex);
+				return result;
+			}
+		} else {
+			if (cmp.compare(current.value, elem) > 0)
+				current.leftTree = delete(current.leftTree, elem, blockIndex, flag);
+			else
+				current.rightTree = delete(current.rightTree, elem, blockIndex, flag);
+		}
+		if (!sameSons(auxLeft, auxRight, current)) {
+			current.blocksModified.add(blockIndex);
+		}
+		current.height = getHeight(current);
+		current = balanceTree(current, blockIndex);
+
+		return current;
+
+	}
+
+	/**
+	 * 
+	 * @param current
+	 *            Nodo en cuestion el cual la función chequea si debe balancear
+	 * @param blockIndex
+	 *            Indice del bloque que va a modificar el árbol
+	 * @return Retorna el nodo balanceado
+	 * @see getBalance La función balanceTree revisa los posibles casos de las
+	 *      rotaciones y decide que rotación debe hacerse para balancear el arbol
+	 */
+
+	private Node<T> balanceTree(Node<T> current, int blockIndex) {
+		if (current.leftTree != null && current.rightTree != null) {
+			if (((current.leftTree.height + 1) - (current.rightTree.height + 1)) < -1) {
+				if (getBalance(current.rightTree) > 0)
+					return rotateLeftRight(current, blockIndex);
+				return rotateLeft(current, blockIndex);
+			} else if (((current.leftTree.height + 1) - (current.rightTree.height + 1)) > 1) {
+				if (getBalance(current.leftTree) < 0)
+					return rotateRightLeft(current, blockIndex);
+				return rotateRight(current, blockIndex);
+			}
+		} else if (current.leftTree != null) {
+			if (current.leftTree.height + 1 > 1) {
+				if (getBalance(current.leftTree) < 0)
+					return rotateRightLeft(current, blockIndex);
+				return rotateRight(current, blockIndex);
+			}
+		} else if (current.rightTree != null) {
+			if (current.rightTree.height + 1 > 1) {
+				if (getBalance(current.rightTree) > 0)
+					return rotateLeftRight(current, blockIndex);
+				return rotateLeft(current, blockIndex);
+			}
+		}
+		return current;
+	}
+
+	/**
+	 * 
+	 * @param current
+	 *            Nodo en cuestión de la función
+	 * @return Retorna el factor de balance del nodo current
+	 */
+
+	private int getBalance(Node<T> current) {
+		if (noSons(current))
+			return 0;
+		if (current.leftTree == null)
+			return -current.rightTree.height - 1;
+		if (current.rightTree == null)
+			return current.leftTree.height + 1;
+		return (current.leftTree.height + 1) - (current.rightTree.height + 1);
+	}
+
+	/**
+	 * 
+	 * @param current
+	 *            Nodo en cuestión de la función
+	 * @return Retorna un numero con la altura actual del nodo current Se utiliza
+	 *         principalmente para actualizar la altura del nodo luego de haberse
+	 *         hecho agregados, borrados o rotaciones
+	 */
+
+	private int getHeight(Node<T> current) {
+		if (current.leftTree != null && current.rightTree != null)
+			return Math.max(current.leftTree.height, current.rightTree.height) + 1;
+		else if (current.leftTree != null)
+			return current.leftTree.height + 1;
+		else if (current.rightTree != null)
+			return current.rightTree.height + 1;
+		else
+			return 0;
+	}
+
+	/**
+	 * 
+	 * @param current
+	 *            Nodo en cuestion de la función
+	 * @return Retorna un boolean para reconocer si el nodo current tiene almenos un
+	 *         hijo
+	 */
+
+	private boolean noSons(Node<T> current) {
+		if (current.leftTree == null && current.rightTree == null)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param current
+	 *            Nodo en cuestión de la función
+	 * @return Retorna un boolean para reconocer si el nodo current tiene
+	 *         exactamente un hijo
+	 */
+
+	private boolean oneSon(Node<T> current) {
+		if (current.leftTree != null && current.rightTree == null)
+			return true;
+		if (current.leftTree == null && current.rightTree != null)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param current
+	 *            Nodo en cuestión de la función recursiva
+	 * @return Retorna el nodo current La función sirve para buscar el nodo que
+	 *         tenga el valor maximo del subArbol izquierdo del nodo que llamo a la
+	 *         función
+	 */
+
+	private Node<T> getMaxLeaf(Node<T> current) {
+		if (current.rightTree != null)
+			return getMaxLeaf(current.rightTree);
+		Node<T> result = current;
+		return result;
+	}
+
+	/**
+	 * 
+	 * @param big
+	 *            Representa al nodo desbalanceado que llamo a la rotacion
+	 * @param blockIndex
+	 *            Indice del bloque que va a modificar el árbol
+	 * @return Retorna el nodo que ocupara el lugar del nodo Big luego del balanceo
+	 * @see rotateRightLeft, rotateLeft, rotateRight, rotateLeftRight Para todas las
+	 *      funciones nombradas en @see sirve lo argumentado en este comentario
+	 */
+
+	private Node<T> rotateRight(Node<T> big, int blockIndex) {
 		Node<T> aux = big.leftTree;
 		big.leftTree = aux.rightTree;
 		aux.rightTree = big;
 		big.height = aux.height - 1;
+		big.height = getHeight(big);
+		aux.height = getHeight(aux);
+		big.blocksModified.add(blockIndex);
+		aux.blocksModified.add(blockIndex);
 		return aux;
 	}
 
-	private Node<T> rotateRightLeft(Node<T> big) {
+	private Node<T> rotateRightLeft(Node<T> big, int blockIndex) {
+		big.leftTree.blocksModified.add(blockIndex);
 		big.leftTree.rightTree.height++;
-		big.leftTree = rotateLeft(big.leftTree);
-		big = rotateRight(big);
+		big.leftTree = rotateLeft(big.leftTree, blockIndex);
+		big = rotateRight(big, blockIndex);
+		big.height = getHeight(big);
 		return big;
 	}
 
-	private Node<T> rotateLeft(Node<T> big) {
+	private Node<T> rotateLeft(Node<T> big, int blockIndex) {
 		Node<T> aux = big.rightTree;
 		big.rightTree = aux.leftTree;
 		aux.leftTree = big;
 		big.height = aux.height - 1;
+		big.blocksModified.add(blockIndex);
+		aux.blocksModified.add(blockIndex);
+		big.height = getHeight(big);
+		aux.height = getHeight(aux);
 		return aux;
 	}
 
-	private Node<T> rotateLeftRight(Node<T> big) {
+	private Node<T> rotateLeftRight(Node<T> big, int blockIndex) {
+		big.rightTree.blocksModified.add(blockIndex);
 		big.rightTree.leftTree.height++;
-		big.rightTree = rotateRight(big.rightTree);
-		big = rotateLeft(big);
+		big.rightTree = rotateRight(big.rightTree, blockIndex);
+		big = rotateLeft(big, blockIndex);
+		big.height = getHeight(big);
 		return big;
-	}
-
-	public Boolean check() {
-		Check c = new Check();
-		check(this.root, c);
-		return c.getValue();
-	}
-
-	private int check(Node<T> current, Check c) {
-		if (current == null) {
-			return -1;
-		}
-		int aux1 = check(current.leftTree, c);
-		int aux2 = check(current.rightTree, c);
-		if (Math.abs(aux1 - aux2) <= 1) {
-			c.setValue(c.getValue() && true);
-		} else {
-			c.setValue(false);
-		}
-		return Math.max(aux1, aux2) + 1;
 	}
 
 	public void print() {
@@ -500,38 +361,167 @@ public class AvlTree<T> {
 				ls.add(aux.rightTree);
 			}
 			System.out.println(aux.value + " height: " + aux.height);
+
+			System.out.println(aux.value + " height: " + aux.height);
 		}
-	}
-	
-	public void draw() {
-		this.computeNodePositions(); //posiciones XY de cada nodo
-	    this.maxheight=this.treeHeight(this.root);
-		DrawnTree tree = new DrawnTree(this);
-		
-		tree.setVisible(true); 
-	}
-	
-	public int treeHeight(Node<T> t){
-		if(t==null) return -1;
-	          else return 1 + max(treeHeight(t.leftTree),treeHeight(t.rightTree));
-	    }
-	
-	public int max(int a, int b){
-		  if(a>b) return a; else return b;
+
 	}
 
-	public void computeNodePositions() {
-	      int depth = 1;
-	      inorder_traversal(root, depth);
+	public int getHeight() {
+		int result = -1 + calculateHeight(root);
+		return result;
 	}
-	
-	public void inorder_traversal(Node<T> avl, int depth) { 
-	      if (avl != null) {
-	        inorder_traversal(avl.leftTree, depth + 1); //sumar 1 a depth (coordenada y) 
-	        avl.xpos = totalnodes++; //x es nro de nodo en inorder transversal
-	        avl.ypos = depth; // y es la depth
-	        inorder_traversal(avl.rightTree, depth + 1);
-	      }
-	    }
-	
+
+	private int calculateHeight(Node<T> node) {
+		if (node == null)
+			return 0;
+		return 1 + Math.max(calculateHeight(node.leftTree), calculateHeight(node.rightTree));
+	}
+
+	public void printByLevels() {
+		for (int i = 0; i <= this.getHeight(); i++) {
+			System.out.print("Nodes at level " + i + ": ");
+			printLevel(0, i, root);
+			System.out.println();
+		}
+	}
+
+	private void printLevel(int currLevel, int index, Node<T> node) {
+		if (node == null)
+			return;
+		if (currLevel != index) {
+			printLevel(currLevel + 1, index, node.leftTree);
+			printLevel(currLevel + 1, index, node.rightTree);
+		} else {
+			System.out.print(node.value + " ");
+		}
+		return;
+
+	}
+
+	public boolean isBTS() {
+		LinkedList<T> list = new LinkedList<T>();
+		if (!isBTS(root, list))
+			return false;
+		for (int i = 0; i < list.size() - 1; i++) {
+			if (cmp.compare(list.get(i), list.get(i + 1)) > 0)
+				return false;
+		}
+		return true;
+	}
+
+	private boolean isBTS(Node<T> node, LinkedList<T> list) {
+		if (node == null)
+			return true;
+		boolean left = true;
+		boolean right = true;
+		if (node.leftTree != null) {
+			if (cmp.compare(node.value, node.leftTree.value) < 0)
+				return false;
+			left = isBTS(node.leftTree, list);
+		}
+		list.add(node.value);
+		if (node.rightTree != null) {
+			if (cmp.compare(node.value, node.rightTree.value) > 0)
+				return false;
+			right = isBTS(node.rightTree, list);
+		}
+		return left && right;
+	}
+
+	public boolean isAVL() {
+		return isAVL(root);
+	}
+
+	private boolean isAVL(Node<T> node) {
+		if (node == null)
+			return true;
+		int leftH;
+		int rightH;
+		leftH = getNodeHeight(node.leftTree);
+		rightH = getNodeHeight(node.rightTree);
+		if ((leftH - rightH) >= -1 && (leftH - rightH) <= 1) {
+			return isAVL(node.leftTree) && isAVL(node.rightTree);
+		}
+		System.out.println("Retorne false por el node: " + node.value);
+		return false;
+
+	}
+
+	private int getNodeHeight(Node<T> node) {
+		if (node == null)
+			return 0;
+		return 1 + Math.max(getNodeHeight(node.leftTree), getNodeHeight(node.rightTree));
+	}
+
+	/**
+	 * Busca el elemento pedido en el arbol
+	 * 
+	 * @param elem
+	 *            Elemento a buscar
+	 * @return Retorna una lista con los bloques que modificaron al nodo que posee
+	 *         el elemento pedido Sino retorna null, en caso de no ser encontrado
+	 * @see search(Node<T> current, T elem)
+	 */
+
+	public List<Integer> contains(T elem) {
+		Node<T> searched = search(this.root, elem);
+		if (searched != null)
+			return searched.blocksModified;
+		else
+			return null;
+	}
+
+	/**
+	 * 
+	 * @param current
+	 *            Nodo en cuestión de la recursión
+	 * @param elem
+	 *            Elemento a buscar
+	 * @return Devuelve el nodo que contiene al elemento
+	 */
+	private Node<T> search(Node<T> current, T elem) {
+		if (current == null)
+			return null;
+		if (this.cmp.compare(current.value, elem) == 0)
+			return current;
+
+		if (this.cmp.compare(current.value, elem) < 0)
+			return search(current.rightTree, elem);
+		else
+			return search(current.leftTree, elem);
+
+	}
+
+	public void showModifications() {
+		showModificationsOnNodes(this.root);
+	}
+
+	private void showModificationsOnNodes(Node<T> current) {
+		if (current == null)
+			return;
+		System.out.println("Node: " + current.value);
+		current.blocksModified.showElements();
+		showModificationsOnNodes(current.leftTree);
+		showModificationsOnNodes(current.rightTree);
+
+	}
+
+	public void printInfo() {
+		printInfoo(this.root);
+	}
+
+	//
+	private void printInfoo(Node<T> current) {
+		System.out.println("Soy el nodo: " + current.value + " - Mi altura es: " + current.height);
+		// if(current.leftTree != null)
+		// System.out.println("Mi hijo izquierdo es: " + current.leftTree.value);
+		// if(current.rightTree != null)
+		// System.out.println("Mi hijo derecho es: " + current.rightTree.value);
+		if (current.leftTree != null)
+			printInfoo(current.leftTree);
+		if (current.rightTree != null)
+			printInfoo(current.rightTree);
+	}
+
 }

@@ -1,63 +1,49 @@
 package AVL;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.Scanner;
 
 public class Principal {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws NoSuchAlgorithmException {
 
 		Scanner scan = new Scanner(System.in);
 		BlockChain<Integer> blockChain = null;
+		Comparator<Integer> cmp = new Comparator<Integer>() {
 
-		// Hay que diferenciar las operaciones de 1(validate), 2(zeros, add, remove,
-		// lookup) y 3 (modify) parametros
-	
-		while (scan.hasNext()) {
-			String op = scan.next();
-			if (op.equals("exit")) // Escribir exit para salir
-				break;
-	
-			String elem = scan.next();
-			Operation<Integer> operation = getOperation(op, Integer.parseInt(elem), blockChain);
-	
-			if (operation != null)
-				blockChain = operation.apply(blockChain);
-	
+			@Override
+			public int compare(Integer o1, Integer o2) {
+				return o1 - o2;
 			}
-		
+
+		};
+
+		FromString<Integer> fs = new FromString<Integer>() {
+
+			@Override
+			public Integer convert(String s) {
+				return Integer.parseInt(s);
+			}
+
+		};
+
+		while (scan.hasNext()) {
+			String command = scan.nextLine();
+
+			if (command.equals("exit")) // Escribir exit para salir
+				break;
+
+			if (blockChain != null) {
+				blockChain.operate(command);
+			} else if (command.substring(0, 6).toLowerCase().equals("zeros ")) {
+				Zeros<Integer> zeros = new Zeros<Integer>(Integer.parseInt(command.substring(6)));
+				blockChain = zeros.createBlockchain(cmp, fs);
+			}
+
+		}
+
 		scan.close();
 
-	}
-
-	public static Operation<Integer> getOperation(String op, Integer elem, BlockChain<Integer> blockChain) {
-
-		switch (op) {
-		case "zeros":
-			Comparator<Integer> cmp = new Comparator<Integer>() {
-				@Override
-				public int compare(Integer o1, Integer o2) {
-					return o1.compareTo(o2);
-				}
-			};
-			if (blockChain == null)
-				return new Zeros<Integer>(op, elem, cmp);
-			
-			
-		case "add":
-			if (blockChain != null)
-				return new Add<Integer>(op, elem);
-
-		case "remove":
-			if (blockChain != null)
-				return new Remove<Integer>(op, elem);
-
-		case "lookup":
-			if (blockChain != null)
-				return new LookUp<Integer>(op, elem);
-		
-		default:
-			return null;
-		}
 	}
 
 }
