@@ -43,8 +43,9 @@ public class AvlTree<T> {
 	 */
 
 	public boolean insert(T elem, int blockIndex) {
-		this.root = add(this.root, elem, blockIndex);
-		return true; // SACAR
+		Check c = new Check(false);
+		this.root = add(this.root, elem, blockIndex, c);
+		return c.getValue(); // SACAR
 	}
 
 	/**
@@ -66,8 +67,10 @@ public class AvlTree<T> {
 		}
 		Node<T> auxLeft = current.leftTree;
 		Node<T> auxRight = current.rightTree;
-		if (cmp.compare(current.value, elem) == 0)
-			return null;
+		if (cmp.compare(current.value, elem) == 0) {
+			c.setValue(false);
+			return current;
+		}
 		if (cmp.compare(current.value, elem) > 0)
 			current.leftTree = add(current.leftTree, elem, blockIndex);
 		else
