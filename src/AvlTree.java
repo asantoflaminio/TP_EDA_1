@@ -43,7 +43,7 @@ public class AvlTree<T> {
 	 */
 
 	public boolean insert(T elem, int blockIndex) {
-		Check c = new Check(false);
+		Check c = new Check(true);
 		this.root = add(this.root, elem, blockIndex, c);
 		return c.getValue(); // SACAR
 	}
@@ -59,7 +59,7 @@ public class AvlTree<T> {
 	 * @return Retorna el nodo en cuestión see getHeight, balanceTree
 	 */
 
-	private Node<T> add(Node<T> current, T elem, int blockIndex) {
+	private Node<T> add(Node<T> current, T elem, int blockIndex, Check c) {
 		if (current == null) {
 			Node<T> node = new Node<T>(elem);
 			node.blocksModified.add(blockIndex);
@@ -72,9 +72,9 @@ public class AvlTree<T> {
 			return current;
 		}
 		if (cmp.compare(current.value, elem) > 0)
-			current.leftTree = add(current.leftTree, elem, blockIndex);
+			current.leftTree = add(current.leftTree, elem, blockIndex, c);
 		else
-			current.rightTree = add(current.rightTree, elem, blockIndex);
+			current.rightTree = add(current.rightTree, elem, blockIndex, c);
 		current.height = getHeight(current);
 		current = balanceTree(current, blockIndex);
 		if (!sameSons(auxLeft, auxRight, current))
@@ -111,11 +111,9 @@ public class AvlTree<T> {
 	 */
 
 	public boolean remove(T elem, int blockIndex) {
-		Check flag = new Check();
+		Check flag = new Check(true);
 		root = delete(this.root, elem, blockIndex, flag);
-		if (flag.getValue())
-			return true;
-		return false;
+		return flag.getValue();
 	}
 
 	/**
@@ -132,9 +130,10 @@ public class AvlTree<T> {
 	 */
 
 	private Node<T> delete(Node<T> current, T elem, int blockIndex, Check flag) {
-		if (current == null)
+		if (current == null) {
+			flag.setValue(false);
 			return null;
-
+		}
 		Node<T> auxLeft = current.leftTree;
 		Node<T> auxRight = current.rightTree;
 		if (cmp.compare(current.value, elem) == 0) {

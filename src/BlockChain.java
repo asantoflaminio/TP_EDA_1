@@ -29,9 +29,10 @@ public class BlockChain<T> {
 		private String prevHash;
 		private String hash;
 		private String data;
+		private boolean validate;
 		private Block<T> prevBlock;
 
-		public Block(String data, Block<T> prevBlock) {
+		public Block(String data, Block<T> prevBlock, boolean val) {
 			this.data = data;
 			this.prevBlock = prevBlock;
 			if (prevBlock != null) {
@@ -41,12 +42,15 @@ public class BlockChain<T> {
 				this.prevHash = "0000000000000000000000000000000000000000000000000000000000000000";
 				this.index = 0;
 			}
-			print();
+			this.validate = val;
+
 		}
 
 		// Para probar, despues se cambia
 		public void print() {
 			System.out.println("Block index: " + this.index);
+			System.out.println("Hash: " + this.hash);
+			System.out.println("Done: " + this.validate);
 			System.out.println("Avl tree: ");
 			avl.printInfo();
 			System.out.println("--------------------");
@@ -71,9 +75,10 @@ public class BlockChain<T> {
 				 * Creo el Hash del
 				 */
 				MessageDigest digest = MessageDigest.getInstance("SHA-256");
-				byte[] hash = digest.digest(s.getBytes(StandardCharsets.UTF_8));
+				byte[] hash = digest.digest(prueba.getBytes(StandardCharsets.UTF_8));
 				prueba2 = DatatypeConverter.printHexBinary(hash);
 				;
+
 				/*
 				 * Verifico que los n primeros bytes sean 0
 				 */
@@ -83,6 +88,7 @@ public class BlockChain<T> {
 				i++;
 			}
 			this.nonce = i;
+			this.hash = prueba2;
 		}
 
 	}
@@ -96,30 +102,53 @@ public class BlockChain<T> {
 	public void operate(String command) throws NoSuchAlgorithmException {
 
 		if (command.substring(0, 4).toLowerCase().equals("add ")) {
-			if (this.add(fromString.convert(command.substring(4)))) {
-				this.last = new Block(command, this.last);
-				//this.last.generateHash(this.zeros);
+			T value = fromString.convert(command.substring(4));
+			if (value != null) {
+
+				if (this.add(value)) {
+					this.last = new Block(command, this.last, true);
+				} else {
+					this.last = new Block(command, this.last, false);
+				}
+				this.last.generateHash(this.zeros);
+
+			} else {
+				System.out.println("INVALID COMMAND");
 			}
 		} else if (command.substring(0, 7).toLowerCase().equals("remove ")) {
-			if (this.remove(fromString.convert(command.substring(7)))) {
-				this.last = new Block(command, this.last);
-				//this.last.generateHash(this.zeros);
-			}
-		} else if (command.substring(0, 8).toLowerCase().equals("look up ")) {
-			List<Integer> ls = lookUp(this.fromString.convert(command.substring(8)));
-		
-			if (ls != null) {
-				for (Integer i : ls) {
-					System.out.println("Block:" + i);
+			T value = fromString.convert(command.substring(7));
+			if (value != null) {
+				if (this.remove(value)) {
+					this.last = new Block(command, this.last, true);
+				} else {
+					this.last = new Block(command, this.last, false);
 				}
+				this.last.generateHash(this.zeros);
+			} else {
+				System.out.println("INVALID COMMAND");
 			}
-		} else if (command.substring(0, 9).toLowerCase().equals("validate ")) {
+		} else if (command.substring(0, 7).toLowerCase().equals("lookup ")) {
+			T value = fromString.convert(command.substring(7));
+			if (value != null) {
+				List<Integer> ls = lookUp(value);
+
+				if (ls != null) {
+					for (Integer i : ls) {
+						System.out.println("Block:" + i);
+					}
+				}
+			} else {
+				System.out.println("INVALID COMMAND");
+			}
+		} else if (command.toLowerCase().equals("validate")) {
 			System.out.println(validate());
 		} else if (command.substring(0, 7).toLowerCase().equals("modify ")) {
-
+			
 		} else {
 			System.out.println("NOT VALID COMMAND");
 		}
+		this.last.print(); // Tener en cuenta que esta imprimiendo el ultimo bloque siempre aunque no se
+							// agrege nada, hay q cambiar esto
 
 	}
 
