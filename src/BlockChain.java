@@ -1,6 +1,9 @@
 package AVL;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
@@ -90,6 +93,10 @@ public class BlockChain<T> {
 			this.nonce = i;
 			this.hash = prueba2;
 		}
+		
+		public void setData(String data){
+			this.data = data;
+		}
 
 	}
 
@@ -143,7 +150,7 @@ public class BlockChain<T> {
 		} else if (command.toLowerCase().equals("validate")) {
 			System.out.println(validate());
 		} else if (command.substring(0, 7).toLowerCase().equals("modify ")) {
-			
+
 			boolean flag = true;
 			int i = 7;
 			int acu = 0;
@@ -210,8 +217,40 @@ public class BlockChain<T> {
 		return validate(current.prevBlock, s);
 	}
 
-	private void modify(int n, String file) {
-		System.out.println(n + " " + file);
+	private void modify(int n, String filePath){
+		
+		//Saco los corchetes
+		filePath = filePath.substring(2, filePath.length()-1);
+
+		System.out.println("Tomando datos de "+ filePath);
+		try{
+			String op = new String(Files.readAllBytes(Paths.get(filePath)));
+			System.out.println("La operacion nueva del bloque " + n + " es: " + op);
+			/*
+			 * NO SE si hay que chequear si esa operacion es valida o no
+			 * yo creo que no porque da igual y la blockchain se rompe pongas lo q pongas
+			 * pueden ponerte cualquier cosa y se tiene q romper entiendo yo
+			 */
+			Block<T> current = this.last;
+			int flag = 0;
+			while( current != null && flag == 0){
+				if(current.index == n){
+					flag = 1;
+				}
+			}
+
+
+			current.setData(op); 
+			//Modifico la operacion guardada
+			
+			//A PARTIR DE ACA VENDRIA LO DEL HASH y VALIDACION etc
+			
+		}catch(IOException ex){
+			 System.out.println("No se pudo encontrar el archivo");
+			 return;
+		}
+		
+		
 	}
 
 }
