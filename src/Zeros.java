@@ -9,7 +9,7 @@ public class Zeros<T> {
 		this.zeros = zeros;
 	}
 
-	public BlockChain createBlockchain(Comparator cmp, FromString fs) {
-		return new BlockChain<T>(this.zeros, cmp, fs);
+	public BlockChain createBlockchain(Comparator cmp) {
+		return new BlockChain<T>(this.zeros, cmp);
 	}
 }

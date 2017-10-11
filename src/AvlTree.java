@@ -510,11 +510,13 @@ public class AvlTree<T> {
 	}
 
 	public void printInfo() {
-		printInfoo(this.root);
+		if(this.root != null)
+			printInfoo(this.root);
 	}
 
 	//
 	private void printInfoo(Node<T> current) {
+		System.out.println("AVL TREE: ");
 		System.out.println("Soy el nodo: " + current.value + " - Mi altura es: " + current.height);
 		// if(current.leftTree != null)
 		// System.out.println("Mi hijo izquierdo es: " + current.leftTree.value);

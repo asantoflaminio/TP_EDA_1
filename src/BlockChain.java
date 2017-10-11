@@ -7,22 +7,20 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
-import java.util.Random;
+
 
 import javax.xml.bind.DatatypeConverter;
 
 public class BlockChain<T> {
 
-	private FromString<T> fromString;
 	private final int zeros;
 	private Block<T> last;
 	private AvlTree<T> avl;
 
-	public BlockChain(final int zeros, Comparator<T> cmp, FromString<T> fs) {
+	public BlockChain(final int zeros, Comparator<T> cmp) {
 		this.last = null;
 		this.zeros = zeros;
 		this.avl = new AvlTree(cmp);
-		this.fromString = fs;
 	}
 
 	private class Block<T> {
@@ -49,14 +47,16 @@ public class BlockChain<T> {
 
 		}
 
-		// Para probar, despues se cambia
-		public void print() {
+		
+		public void printBlock() {
 			System.out.println("Block index: " + this.index);
 			System.out.println("Hash: " + this.hash);
-			System.out.println("Done: " + this.validate);
-			System.out.println("Avl tree: ");
+			System.out.println("Previous hash: " + this.prevHash);
+			System.out.println("Nonce: " + this.nonce);
+			System.out.println("Operation: " + this.data);
+			System.out.println(this.validate? "Successful operation" : "Failed operation");
 			avl.printInfo();
-			System.out.println("--------------------");
+			System.out.println("----------------------------------------------------------");
 		}
 
 		private void generateHash(int zeros) throws NoSuchAlgorithmException {
@@ -93,94 +93,98 @@ public class BlockChain<T> {
 			this.nonce = i;
 			this.hash = prueba2;
 		}
-		
-		public void setData(String data){
+
+		public void setData(String data) {
 			this.data = data;
 		}
 
 	}
 
-	// Se llama a esta funcion luego de insertar un comando, si el comando es valido
-	// se llama a las funciones, sino se tira excepecion o mensaje de error
-	// Faltan los casos que la operacion no se puede realizar sobre el avl pero si
-	// genero un bloque
-	// Faltan los chequeos sobre el comando recibido
+	public void add(String command, T elem) throws NoSuchAlgorithmException {
+		if (elem != null) {
 
-	public void operate(String command) throws NoSuchAlgorithmException {
-
-		if (command.substring(0, 4).toLowerCase().equals("add ")) {
-			T value = fromString.convert(command.substring(4));
-			if (value != null) {
-
-				if (this.add(value)) {
-					this.last = new Block(command, this.last, true);
-				} else {
-					this.last = new Block(command, this.last, false);
-				}
-				this.last.generateHash(this.zeros);
-
+			if (this.add(elem)) {
+				this.last = new Block(command, this.last, true);
 			} else {
-				System.out.println("INVALID COMMAND");
+				this.last = new Block(command, this.last, false);
 			}
-		} else if (command.substring(0, 7).toLowerCase().equals("remove ")) {
-			T value = fromString.convert(command.substring(7));
-			if (value != null) {
-				if (this.remove(value)) {
-					this.last = new Block(command, this.last, true);
-				} else {
-					this.last = new Block(command, this.last, false);
-				}
-				this.last.generateHash(this.zeros);
-			} else {
-				System.out.println("INVALID COMMAND");
-			}
-		} else if (command.substring(0, 7).toLowerCase().equals("lookup ")) {
-			T value = fromString.convert(command.substring(7));
-			if (value != null) {
-				List<Integer> ls = lookUp(value);
 
-				if (ls != null) {
-					for (Integer i : ls) {
-						System.out.println("Block:" + i);
-					}
-				}
-			} else {
-				System.out.println("INVALID COMMAND");
-			}
-		} else if (command.toLowerCase().equals("validate")) {
-			System.out.println(validate());
-		} else if (command.substring(0, 7).toLowerCase().equals("modify ")) {
-
-			boolean flag = true;
-			int i = 7;
-			int acu = 0;
-			while(flag && command.charAt(i) != ' ') {
-				if(command.charAt(i) < '0' || command.charAt(i) > '9') {
-					flag = false;
-				}
-				else {
-					acu*= 10;
-					acu += command.charAt(i) - '0';
-				}
-				i++;
-			}
-			
-			if(acu > this.last.index || !flag) {
-				System.out.println("Los datos ingresados no son validos");
-			}
-			else {
-				modify(acu, command.substring(i));
-			}
-			
+			this.last.generateHash(this.zeros);
+			this.last.printBlock();
 		} else {
-			System.out.println("NOT VALID COMMAND");
+			System.out.println("Invalid command");
 		}
-		this.last.print(); // Tener en cuenta que esta imprimiendo el ultimo bloque siempre aunque no se
-							// agrege nada, hay q cambiar esto
+
+	
+	}
+
+	public void remove(String command, T elem) throws NoSuchAlgorithmException {
+		if (elem != null) {
+			if (this.remove(elem)) {
+				this.last = new Block(command, this.last, true);
+			} else {
+				this.last = new Block(command, this.last, false);
+			}
+
+			this.last.generateHash(this.zeros);
+			this.last.printBlock();
+		} else {
+			System.out.println("Invalid command");
+		}
 
 	}
 
-	// Necesito que insert me devuelva boolean
+	public void lookUp(String command, T elem) {
+		if (elem != null) {
+			List<Integer> ls = lookUp(elem);
+			if (ls != null) {
+				System.out.println("Indeces of modified blocks: ");
+				for (Integer i : ls) {
+					System.out.println("Block index:" + i);
+				}
+			} else {
+				System.out.println("The element " + elem + " doesn't exist in the tree");
+			}
+		} else {
+			System.out.println("Invalid command");
+		}
+
+	}
+
+	public void validate() {
+		String toCmp = "";
+		for (int i = 0; i < zeros; i++)
+			toCmp += '0';
+
+		boolean valid = validate(this.last, toCmp);
+
+		System.out.print("Blockchain status: ");
+		System.out.println(valid ? "valid" : "invalid");
+	}
+
+	public void modify(String command) {
+
+		boolean flag = true;
+		int i = 7;
+		int acu = 0;
+		while (flag && command.charAt(i) != ' ') {
+			if (command.charAt(i) < '0' || command.charAt(i) > '9') {
+				flag = false;
+			} else {
+				acu *= 10;
+				acu += command.charAt(i) - '0';
+			}
+			i++;
+		}
+
+		if (acu > this.last.index || !flag) {
+			System.out.println("The data entered is not valid");
+		} else {
+			modify(acu, command.substring(i));
+		}
+
+	}
+
 	private boolean add(T elem) {
 		if (last == null)
 			return this.avl.insert(elem, 0);
@@ -197,16 +201,7 @@ public class BlockChain<T> {
 
 	private List<Integer> lookUp(T elem) {
 		List<Integer> list = this.avl.contains(elem);
-		if (list == null)
-			System.out.println("El elemento " + elem + " no existe en el arbol");
 		return list;
-	}
-
-	private boolean validate() {
-		String toCmp = "";
-		for (int i = 0; i < zeros; i++)
-			toCmp += '0';
-		return validate(this.last, toCmp);
 	}
 
 	private boolean validate(Block<T> current, String s) {
@@ -217,40 +212,38 @@ public class BlockChain<T> {
 		return validate(current.prevBlock, s);
 	}
 
-	private void modify(int n, String filePath){
-		
-		//Saco los corchetes
-		filePath = filePath.substring(2, filePath.length()-1);
+	private void modify(int n, String filePath) {
 
-		System.out.println("Tomando datos de "+ filePath);
-		try{
+		// Saco los corchetes
+		filePath = filePath.substring(2, filePath.length() - 1);
+
+		System.out.println("Taking data from: " + filePath);
+		try {
 			String op = new String(Files.readAllBytes(Paths.get(filePath)));
-			System.out.println("La operacion nueva del bloque " + n + " es: " + op);
+			System.out.println("The new block operation " + n + " is: " + op);
 			/*
-			 * NO SE si hay que chequear si esa operacion es valida o no
-			 * yo creo que no porque da igual y la blockchain se rompe pongas lo q pongas
-			 * pueden ponerte cualquier cosa y se tiene q romper entiendo yo
+			 * NO SE si hay que chequear si esa operacion es valida o no yo creo que no
+			 * porque da igual y la blockchain se rompe pongas lo q pongas pueden ponerte
+			 * cualquier cosa y se tiene q romper entiendo yo
 			 */
 			Block<T> current = this.last;
 			int flag = 0;
-			while( current != null && flag == 0){
-				if(current.index == n){
+			while (current != null && flag == 0) {
+				if (current.index == n) {
 					flag = 1;
 				}
 			}
 
+			current.setData(op);
+			// Modifico la operacion guardada
 
-			current.setData(op); 
-			//Modifico la operacion guardada
-			
-			//A PARTIR DE ACA VENDRIA LO DEL HASH y VALIDACION etc
-			
-		}catch(IOException ex){
-			 System.out.println("No se pudo encontrar el archivo");
-			 return;
+			// A PARTIR DE ACA VENDRIA LO DEL HASH y VALIDACION etc
+
+		} catch (IOException ex) {
+			System.out.println("Could not find file");
+			return;
 		}
-		
-		
+
 	}
 
 }

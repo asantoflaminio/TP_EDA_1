@@ -22,19 +22,7 @@ public class Principal {
 
 			@Override
 			public Integer convert(String s) {
-				boolean flag = true;
-				int acu = 0;
-				for (int i = 0; i < s.length() && flag; i++) {
-					if (s.charAt(i) >= '0' && s.charAt(i) <= '9') {
-						acu *= 10;
-						acu += s.charAt(i) - '0';
-					} else {
-						flag = false;
-					}
-				}
-				if (!flag)
-					return null;
-				return acu;
+				return Integer.parseInt(s);
 			}
 
 		};
