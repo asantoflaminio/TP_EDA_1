@@ -73,7 +73,7 @@ public class BlockChain<T> {
 				 * Coloco el numero magico a utilizar delante del que seria el String
 				 * representativo del arbol
 				 */
-				String prueba = new String(i + "-" + this.prevHash + "-" + this.index + '-' + this.data);
+				String prueba = new String(i + "-" + this.prevHash + "-" + this.index + "-" + this.data);
 				/*
 				 * Creo el Hash del
 				 */
@@ -98,71 +98,96 @@ public class BlockChain<T> {
 			this.data = data;
 		}
 		
-		private String reHash() throws NoSuchAlgorithmException {
+		private void reHash() throws NoSuchAlgorithmException {
 			
-			String prueba = new String(this.nonce + "-" + this.prevHash + "-" + this.index + '-' + this.data);
-
+			String prueba = new String(this.nonce + "-" + this.prevHash + "-" + this.index + "-" + this.data);
+			
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
 			byte[] hash = digest.digest(prueba.getBytes(StandardCharsets.UTF_8));
 			prueba = DatatypeConverter.printHexBinary(hash);
 			;
 			
-			return prueba;
+			this.hash = prueba;
 		}
 
 	}
 
 	public void add(String command, T elem) throws NoSuchAlgorithmException {
-		if (elem != null) {
-
-			if (this.add(elem)) {
-				this.last = new Block(command, this.last, true);
-			} else {
-				this.last = new Block(command, this.last, false);
-			}
-
-			this.last.generateHash(this.zeros);
-			this.last.printBlock();
-		} else {
-			System.out.println("Invalid command");
-		}
-
+		if(this.isValid()) {
+			if (elem != null) {
 	
+				if (this.add(elem)) {
+					this.last = new Block<T>(command + " " + elem.toString(), this.last, true);
+				} else {
+					this.last = new Block<T>(command + " " + elem.toString(), this.last, false);
+				}
+	
+				this.last.generateHash(this.zeros);
+				this.last.printBlock();
+			} else {
+				System.out.println("Invalid command");
+			}
+		} else {
+			System.out.println("Invalid BlockChain");
+		}
+			
 	}
 
 	public void remove(String command, T elem) throws NoSuchAlgorithmException {
-		if (elem != null) {
-			if (this.remove(elem)) {
-				this.last = new Block(command, this.last, true);
+		if(this.isValid()) {
+			if (elem != null) {
+				if (this.remove(elem)) {
+					this.last = new Block<T>(command + " " + elem.toString(), this.last, true);
+				} else {
+					this.last = new Block<T>(command + " " + elem.toString(), this.last, false);
+				}
+	
+				this.last.generateHash(this.zeros);
+				this.last.printBlock();
 			} else {
-				this.last = new Block(command, this.last, false);
+				System.out.println("Invalid command");
 			}
-
-			this.last.generateHash(this.zeros);
-			this.last.printBlock();
 		} else {
-			System.out.println("Invalid command");
+			System.out.println("Invalid BlockChain");
 		}
-
 	}
 
 	public void lookUp(String command, T elem) {
-		if (elem != null) {
-			List<Integer> ls = lookUp(elem);
-			if (ls != null) {
-				System.out.println("Indeces of modified blocks: ");
-				for (Integer i : ls) {
-					System.out.println("Block index:" + i);
+		if(this.isValid()) {
+			if (elem != null) {
+				List<Integer> ls = lookUp(elem);
+				if (ls != null) {
+					System.out.println("Indexes of modified blocks: ");
+					for (Integer i : ls) {
+						System.out.println("Block index:" + i);
+					}
+				} else {
+					System.out.println("The element " + elem + " doesn't exist in the tree");
 				}
 			} else {
-				System.out.println("The element " + elem + " doesn't exist in the tree");
+				System.out.println("Invalid command");
 			}
 		} else {
-			System.out.println("Invalid command");
+			System.out.println("Invalid BlockChain");
 		}
-
 	}
 
+	//Ya se que es código repetido con validate pero no sé distinguir los casos entre el validate que
+	//me piden por linea de comando y tengo que imprimir si es valida o no la blockchain, y el validate
+	//que tendría que preguntar en add, remove, lookup y modify, porque si le pongo el mismo que el de
+	//linea de comando cada vez que haga una operacion me va a imprimir si es válida o no la cadena
+	//Obvio que si se les ocurre algo cambienlo
+	private boolean isValid() {
+		String toCmp = "";
+		for (int i = 0; i < zeros; i++)
+			toCmp += '0';
+
+		boolean valid = validate(this.last, toCmp);
+
+		return valid ? true : false;
+
+	}
+	
 	public void validate() {
 		String toCmp = "";
 		for (int i = 0; i < zeros; i++)
@@ -172,27 +197,31 @@ public class BlockChain<T> {
 
 		System.out.print("Blockchain status: ");
 		System.out.println(valid ? "valid" : "invalid");
+		
 	}
 
-	public void modify(String command) {
-
-		boolean flag = true;
-		int i = 7;
-		int acu = 0;
-		while (flag && command.charAt(i) != ' ') {
-			if (command.charAt(i) < '0' || command.charAt(i) > '9') {
-				flag = false;
-			} else {
-				acu *= 10;
-				acu += command.charAt(i) - '0';
+	public void modify(String command) throws NoSuchAlgorithmException {
+		if(this.isValid()) {
+			boolean flag = true;
+			int i = 7;
+			int acu = 0;
+			while (flag && command.charAt(i) != ' ') {
+				if (command.charAt(i) < '0' || command.charAt(i) > '9') {
+					flag = false;
+				} else {
+					acu *= 10;
+					acu += command.charAt(i) - '0';
+				}
+				i++;
 			}
-			i++;
-		}
-
-		if (acu > this.last.index || !flag) {
-			System.out.println("The data entered is not valid");
+	
+			if (acu > this.last.index || !flag) {
+				System.out.println("The data entered is not valid");
+			} else {
+				modify(acu, command.substring(i));
+			}
 		} else {
-			modify(acu, command.substring(i));
+			System.out.println("Invalid BlockChain");
 		}
 	}
 
@@ -223,7 +252,7 @@ public class BlockChain<T> {
 		return validate(current.prevBlock, s);
 	}
 
-	private void modify(int n, String filePath) {
+	private void modify(int n, String filePath) throws NoSuchAlgorithmException {
 
 		// Saco los corchetes
 		filePath = filePath.substring(2, filePath.length() - 1);
@@ -231,7 +260,7 @@ public class BlockChain<T> {
 		System.out.println("Taking data from: " + filePath);
 		try {
 			String op = new String(Files.readAllBytes(Paths.get(filePath)));
-			System.out.println("The new block operation " + n + " is: " + op);
+			System.out.println("The new operation in block " + n + " is: " + op);
 			/*
 			 * NO SE si hay que chequear si esa operacion es valida o no yo creo que no
 			 * porque da igual y la blockchain se rompe pongas lo q pongas pueden ponerte
@@ -242,13 +271,13 @@ public class BlockChain<T> {
 			while (current != null && flag == 0) {
 				if (current.index == n) {
 					flag = 1;
+				} else {
+					current = current.prevBlock;
 				}
 			}
 
 			current.setData(op);
-			// Modifico la operacion guardada
 
-			// A PARTIR DE ACA VENDRIA LO DEL HASH y VALIDACION etc
 			modifyRecursive(n, last);
 			
 		} catch (IOException ex) {
