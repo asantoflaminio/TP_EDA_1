@@ -97,6 +97,18 @@ public class BlockChain<T> {
 		public void setData(String data) {
 			this.data = data;
 		}
+		
+		private String reHash() throws NoSuchAlgorithmException {
+			
+			String prueba = new String(this.nonce + "-" + this.prevHash + "-" + this.index + '-' + this.data);
+
+			MessageDigest digest = MessageDigest.getInstance("SHA-256");
+			byte[] hash = digest.digest(prueba.getBytes(StandardCharsets.UTF_8));
+			prueba = DatatypeConverter.printHexBinary(hash);
+			;
+			
+			return prueba;
+		}
 
 	}
 
@@ -182,7 +194,6 @@ public class BlockChain<T> {
 		} else {
 			modify(acu, command.substring(i));
 		}
-
 	}
 
 	private boolean add(T elem) {
@@ -238,12 +249,23 @@ public class BlockChain<T> {
 			// Modifico la operacion guardada
 
 			// A PARTIR DE ACA VENDRIA LO DEL HASH y VALIDACION etc
-
+			modifyRecursive(n, last);
+			
 		} catch (IOException ex) {
 			System.out.println("Could not find file");
 			return;
 		}
 
+	}
+	
+	private String modifyRecursive(int n, Block<T> current) throws NoSuchAlgorithmException {
+		if(current.index == n) {
+			current.reHash();
+			return current.hash;
+		}
+		current.prevHash = modifyRecursive(n, current.prevBlock);
+		current.reHash();
+		return current.hash;
 	}
 
 }
