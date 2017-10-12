@@ -37,9 +37,10 @@ public class AvlTree<T> {
 	 *            Elemento a insertar
 	 * @param blockIndex
 	 *            Indice del bloque que va a modificar el arbol
+	 * @return Devuelve true si se pudo agregar el elemento
 	 * @see add
 	 * 
-	 *      Es la función wrapper que se encarga de agregar un elemento al árbol
+	 *      Es la funcion wrapper que se encarga de agregar un elemento al arbol
 	 */
 
 	public boolean insert(T elem, int blockIndex) {
@@ -51,12 +52,12 @@ public class AvlTree<T> {
 	/**
 	 * 
 	 * @param current
-	 *            Nodo en cuestión de la función recursiva
+	 *            Nodo en cuestion de la funcion recursiva
 	 * @param elem
 	 *            Elemento a insertar
 	 * @param blockIndex
-	 *            Indice del bloque que va a modificar el árbol
-	 * @return Retorna el nodo en cuestión see getHeight, balanceTree
+	 *            Indice del bloque que va a modificar el arbol
+	 * @return Retorna el nodo en cuestion see getHeight, balanceTree
 	 */
 
 	private Node<T> add(Node<T> current, T elem, int blockIndex, Check c) {
@@ -105,9 +106,9 @@ public class AvlTree<T> {
 	 * @param elem
 	 *            Elemento en cuestion a eliminar
 	 * @param blockIndex
-	 *            Indice del bloque que va a modificar el árbol
-	 * @return Retorna un booleano para indicar si pudo realizar la operación o no
-	 * @see delete Es la función wrapper de la función recursiva delete
+	 *            Indice del bloque que va a modificar el arbol
+	 * @return Retorna un booleano para indicar si pudo realizar la operacion o no
+	 * @see delete Es la funcion wrapper de la funcion recursiva delete
 	 */
 
 	public boolean remove(T elem, int blockIndex) {
@@ -119,14 +120,14 @@ public class AvlTree<T> {
 	/**
 	 * 
 	 * @param current
-	 *            Nodo en cuestión de la función recursiva
+	 *            Nodo en cuestion de la funcion recursiva
 	 * @param elem
-	 *            Elemento a eliminar del árbol
+	 *            Elemento a eliminar del arbol
 	 * @param blockIndex
-	 *            Indice del bloque que va a modificar el árbol
+	 *            Indice del bloque que va a modificar el arbol
 	 * @param flag
-	 *            Indica si la operación se realizó o no
-	 * @return Retorna el nodo en cuestión
+	 *            Indica si la operacion se realizo o no
+	 * @return Retorna el nodo en cuestion
 	 */
 
 	private Node<T> delete(Node<T> current, T elem, int blockIndex, Check flag) {
@@ -176,12 +177,12 @@ public class AvlTree<T> {
 	/**
 	 * 
 	 * @param current
-	 *            Nodo en cuestion el cual la función chequea si debe balancear
+	 *            Nodo en cuestion el cual la funcion chequea si debe balancear
 	 * @param blockIndex
-	 *            Indice del bloque que va a modificar el árbol
+	 *            Indice del bloque que va a modificar el arbol
 	 * @return Retorna el nodo balanceado
-	 * @see getBalance La función balanceTree revisa los posibles casos de las
-	 *      rotaciones y decide que rotación debe hacerse para balancear el arbol
+	 * @see getBalance La funcion balanceTree revisa los posibles casos de las
+	 *      rotaciones y decide que rotacion debe hacerse para balancear el arbol
 	 */
 
 	private Node<T> balanceTree(Node<T> current, int blockIndex) {
@@ -214,7 +215,7 @@ public class AvlTree<T> {
 	/**
 	 * 
 	 * @param current
-	 *            Nodo en cuestión de la función
+	 *            Nodo en cuestion de la funcion
 	 * @return Retorna el factor de balance del nodo current
 	 */
 
@@ -231,7 +232,7 @@ public class AvlTree<T> {
 	/**
 	 * 
 	 * @param current
-	 *            Nodo en cuestión de la función
+	 *            Nodo en cuestion de la funcion
 	 * @return Retorna un numero con la altura actual del nodo current Se utiliza
 	 *         principalmente para actualizar la altura del nodo luego de haberse
 	 *         hecho agregados, borrados o rotaciones
@@ -251,7 +252,7 @@ public class AvlTree<T> {
 	/**
 	 * 
 	 * @param current
-	 *            Nodo en cuestion de la función
+	 *            Nodo en cuestion de la funcion
 	 * @return Retorna un boolean para reconocer si el nodo current tiene almenos un
 	 *         hijo
 	 */
@@ -265,7 +266,7 @@ public class AvlTree<T> {
 	/**
 	 * 
 	 * @param current
-	 *            Nodo en cuestión de la función
+	 *            Nodo en cuestion de la funcion
 	 * @return Retorna un boolean para reconocer si el nodo current tiene
 	 *         exactamente un hijo
 	 */
@@ -281,10 +282,10 @@ public class AvlTree<T> {
 	/**
 	 * 
 	 * @param current
-	 *            Nodo en cuestión de la función recursiva
-	 * @return Retorna el nodo current La función sirve para buscar el nodo que
+	 *            Nodo en cuestion de la funcion recursiva
+	 * @return Retorna el nodo current La funcion sirve para buscar el nodo que
 	 *         tenga el valor maximo del subArbol izquierdo del nodo que llamo a la
-	 *         función
+	 *         funcion
 	 */
 
 	private Node<T> getMaxLeaf(Node<T> current) {
@@ -299,7 +300,7 @@ public class AvlTree<T> {
 	 * @param big
 	 *            Representa al nodo desbalanceado que llamo a la rotacion
 	 * @param blockIndex
-	 *            Indice del bloque que va a modificar el árbol
+	 *            Indice del bloque que va a modificar el arbol
 	 * @return Retorna el nodo que ocupara el lugar del nodo Big luego del balanceo
 	 * @see rotateRightLeft, rotateLeft, rotateRight, rotateLeftRight Para todas las
 	 *      funciones nombradas en @see sirve lo argumentado en este comentario
@@ -463,7 +464,6 @@ public class AvlTree<T> {
 	 *            Elemento a buscar
 	 * @return Retorna una lista con los bloques que modificaron al nodo que posee
 	 *         el elemento pedido Sino retorna null, en caso de no ser encontrado
-	 * @see search(Node<T> current, T elem)
 	 */
 
 	public List<Integer> contains(T elem) {
@@ -477,7 +477,7 @@ public class AvlTree<T> {
 	/**
 	 * 
 	 * @param current
-	 *            Nodo en cuestión de la recursión
+	 *            Nodo en cuestion de la recursion
 	 * @param elem
 	 *            Elemento a buscar
 	 * @return Devuelve el nodo que contiene al elemento
