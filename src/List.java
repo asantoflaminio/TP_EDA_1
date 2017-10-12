@@ -32,8 +32,8 @@ public class List<T> implements Iterable<T> {
 		System.out.println();
 
 	}
-	
-	public int length(){
+
+	public int length() {
 		Node<T> aux = first;
 		int l = 0;
 		while (aux != null) {
@@ -42,7 +42,6 @@ public class List<T> implements Iterable<T> {
 		}
 		return l;
 	}
-	
 
 	@Override
 	public Iterator<T> iterator() {
@@ -50,7 +49,7 @@ public class List<T> implements Iterable<T> {
 	}
 
 	private class MyListIterator<T> implements Iterator<T> {
-		
+
 		private Node<T> next;
 
 		public MyListIterator(Node<T> first) {
@@ -80,14 +79,6 @@ public class List<T> implements Iterable<T> {
 
 		public Node(T value) {
 			this.value = value;
-		}
-
-		public Node<T> getNext() {
-			return next;
-		}
-
-		public T getValue() {
-			return value;
 		}
 
 	}

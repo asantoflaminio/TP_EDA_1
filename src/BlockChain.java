@@ -19,7 +19,7 @@ public class BlockChain<T> {
 	public BlockChain(final int zeros, Comparator<T> cmp) {
 		this.last = null;
 		this.zeros = zeros;
-		this.avl = new AvlTree(cmp);
+		this.avl = new AvlTree<T>(cmp);
 	}
 
 	private class Block<T> {
@@ -94,8 +94,8 @@ public class BlockChain<T> {
 		}
 
 		private void reHash() throws NoSuchAlgorithmException {
-			String str = new String(this.nonce + "-" + this.prevHash + "-" + this.index + "-" + this.data);
-			this.hash = getHash(str);
+			String aux = new String(this.nonce + "-" + this.prevHash + "-" + this.index + "-" + this.data);
+			this.hash = getHash(aux);
 		}
 
 		private String getHash(String str) throws NoSuchAlgorithmException {

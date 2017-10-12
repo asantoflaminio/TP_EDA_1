@@ -445,7 +445,7 @@ public class AvlTree<T> {
 		if ((leftH - rightH) >= -1 && (leftH - rightH) <= 1) {
 			return isAVL(node.leftTree) && isAVL(node.rightTree);
 		}
-		System.out.println("Retorne false por el node: " + node.value);
+		System.out.println("Returns false by the node: " + node.value);
 		return false;
 
 	}
@@ -512,21 +512,17 @@ public class AvlTree<T> {
 	public void printInfo() {
 		if (this.root != null) {
 			System.out.println("AVL TREE: ");
-			printInfoo(this.root);
+			printInfo(this.root);
 		}
 	}
 
-	//
-	private void printInfoo(Node<T> current) {
+	
+	private void printInfo(Node<T> current) {
 		System.out.println("Node value: " + current.value + " - My height is: " + current.height);
-		// if(current.leftTree != null)
-		// System.out.println("Mi hijo izquierdo es: " + current.leftTree.value);
-		// if(current.rightTree != null)
-		// System.out.println("Mi hijo derecho es: " + current.rightTree.value);
 		if (current.leftTree != null)
-			printInfoo(current.leftTree);
+			printInfo(current.leftTree);
 		if (current.rightTree != null)
-			printInfoo(current.rightTree);
+			printInfo(current.rightTree);
 	}
 
 }
