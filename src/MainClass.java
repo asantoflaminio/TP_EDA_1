@@ -65,8 +65,7 @@ public class MainClass {
 			} else if (command.length() > 5 && command.substring(0, 6).toLowerCase().equals("zeros ")) {
 				Integer value = fs.convert(command.substring(6));
 				if (value != null) {
-					Zeros<Integer> zeros = new Zeros<Integer>(value);
-					blockChain = zeros.createBlockchain(cmp);
+					blockChain = new BlockChain<Integer>(value, cmp);
 				} else {
 					System.out.println("Invalid command");
 				}

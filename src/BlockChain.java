@@ -279,7 +279,6 @@ public class BlockChain<T> {
 			}
 
 			current.setData(op);
-
 			modifyRecursive(n, last);
 
 		} catch (IOException ex) {
@@ -287,7 +286,7 @@ public class BlockChain<T> {
 			return;
 		}
 
-		printBC();
+		printBlockChain();
 	}
 
 	private String modifyRecursive(int n, Block<T> current) throws NoSuchAlgorithmException {
@@ -300,8 +299,8 @@ public class BlockChain<T> {
 		return current.hash;
 	}
 
-	private void printBC() {
-		System.out.println("The BlockChain after it has been modified is: \n");
+	private void printBlockChain() {
+		System.out.println("The blockchain after being modified: \n");
 		Block<T> block = this.last;
 
 		while (block != null) {
