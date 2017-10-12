@@ -193,14 +193,14 @@ public class BlockChain<T> {
 		return list;
 	}
 
-	// Ya se que es código repetido con validate pero no sé distinguir los casos
+	// Ya se que es codigo repetido con validate pero no se distinguir los casos
 	// entre el validate que
 	// me piden por linea de comando y tengo que imprimir si es valida o no la
 	// blockchain, y el validate
-	// que tendría que preguntar en add, remove, lookup y modify, porque si le pongo
+	// que tendria que preguntar en add, remove, lookup y modify, porque si le pongo
 	// el mismo que el de
 	// linea de comando cada vez que haga una operacion me va a imprimir si es
-	// válida o no la cadena ( no tiene
+	// valida o no la cadena ( no tiene
 	// sentido, para algo esta validate como metodo)
 	// Obvio que si se les ocurre algo cambienlo
 	private boolean isValid() {
