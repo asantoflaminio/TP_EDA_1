@@ -510,7 +510,7 @@ public class AvlTree<T> {
 	}
 
 	public void printInfo() {
-		if(this.root != null) {
+		if (this.root != null) {
 			System.out.println("AVL TREE: ");
 			printInfoo(this.root);
 		}

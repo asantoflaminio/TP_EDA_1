@@ -8,7 +8,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 
-
 import javax.xml.bind.DatatypeConverter;
 
 public class BlockChain<T> {
@@ -47,14 +46,17 @@ public class BlockChain<T> {
 
 		}
 
-		
+		public void setData(String data) {
+			this.data = data;
+		}
+
 		public void printBlock() {
 			System.out.println("Block index: " + this.index);
 			System.out.println("Hash: " + this.hash);
 			System.out.println("Previous hash: " + this.prevHash);
 			System.out.println("Nonce: " + this.nonce);
 			System.out.println("Operation: " + this.data);
-			System.out.println(this.validate? "Successful operation" : "Failed operation");
+			System.out.println(this.validate ? "Successful operation" : "Failed operation");
 			avl.printInfo();
 			System.out.println("----------------------------------------------------------");
 		}
@@ -67,93 +69,102 @@ public class BlockChain<T> {
 
 			Boolean flag = false;
 			long i = 0;
-			String prueba2 = "";
+			String str = "";
 			while (!flag) {
 				/*
 				 * Coloco el numero magico a utilizar delante del que seria el String
 				 * representativo del arbol
 				 */
-				String prueba = new String(i + "-" + this.prevHash + "-" + this.index + "-" + this.data);
+				String aux = new String(i + "-" + this.prevHash + "-" + this.index + "-" + this.data);
 				/*
 				 * Creo el Hash del
 				 */
-				MessageDigest digest = MessageDigest.getInstance("SHA-256");
-				byte[] hash = digest.digest(prueba.getBytes(StandardCharsets.UTF_8));
-				prueba2 = DatatypeConverter.printHexBinary(hash);
-				;
+				str = getHash(aux);
 
 				/*
 				 * Verifico que los n primeros bytes sean 0
 				 */
-				if (prueba2.substring(0, zeros).equals(s)) {
+				if (str.substring(0, zeros).equals(s)) {
 					flag = true;
 				}
 				i++;
 			}
 			this.nonce = i;
-			this.hash = prueba2;
+			this.hash = str;
 		}
 
-		public void setData(String data) {
-			this.data = data;
-		}
-		
 		private void reHash() throws NoSuchAlgorithmException {
-			
-			String prueba = new String(this.nonce + "-" + this.prevHash + "-" + this.index + "-" + this.data);
-			
+			String str = new String(this.nonce + "-" + this.prevHash + "-" + this.index + "-" + this.data);
+			this.hash = getHash(str);
+		}
+
+		private String getHash(String str) throws NoSuchAlgorithmException {
+
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			byte[] hash = digest.digest(prueba.getBytes(StandardCharsets.UTF_8));
-			prueba = DatatypeConverter.printHexBinary(hash);
-			;
-			
-			this.hash = prueba;
+			byte[] hash = digest.digest(str.getBytes(StandardCharsets.UTF_8));
+			str = DatatypeConverter.printHexBinary(hash);
+
+			return str;
 		}
 
 	}
 
 	public void add(String command, T elem) throws NoSuchAlgorithmException {
-		if(this.isValid()) {
+		if (this.isValid()) {
 			if (elem != null) {
-	
+
 				if (this.add(elem)) {
 					this.last = new Block<T>(command + " " + elem.toString(), this.last, true);
 				} else {
 					this.last = new Block<T>(command + " " + elem.toString(), this.last, false);
 				}
-	
+
 				this.last.generateHash(this.zeros);
 				this.last.printBlock();
 			} else {
 				System.out.println("Invalid command");
 			}
 		} else {
-			System.out.println("Invalid BlockChain");
+			System.out.println("Invalid BlockChain. You can not apply any operation on it");
 		}
-			
+
+	}
+
+	private boolean add(T elem) {
+		if (last == null)
+			return this.avl.insert(elem, 0);
+		else
+			return this.avl.insert(elem, last.index + 1);
 	}
 
 	public void remove(String command, T elem) throws NoSuchAlgorithmException {
-		if(this.isValid()) {
+		if (this.isValid()) {
 			if (elem != null) {
 				if (this.remove(elem)) {
 					this.last = new Block<T>(command + " " + elem.toString(), this.last, true);
 				} else {
 					this.last = new Block<T>(command + " " + elem.toString(), this.last, false);
 				}
-	
+
 				this.last.generateHash(this.zeros);
 				this.last.printBlock();
 			} else {
 				System.out.println("Invalid command");
 			}
 		} else {
-			System.out.println("Invalid BlockChain");
+			System.out.println("Invalid BlockChain. You can not apply any operation on it");
 		}
 	}
 
+	private boolean remove(T elem) {
+		if (last == null)
+			return this.avl.remove(elem, 0);
+		else
+			return this.avl.remove(elem, last.index + 1);
+	}
+
 	public void lookUp(String command, T elem) {
-		if(this.isValid()) {
+		if (this.isValid()) {
 			if (elem != null) {
 				List<Integer> ls = lookUp(elem);
 				if (ls != null) {
@@ -168,15 +179,25 @@ public class BlockChain<T> {
 				System.out.println("Invalid command");
 			}
 		} else {
-			System.out.println("Invalid BlockChain");
+			System.out.println("Invalid BlockChain. You can not apply any operation on it");
 		}
 	}
 
-	//Ya se que es código repetido con validate pero no sé distinguir los casos entre el validate que
-	//me piden por linea de comando y tengo que imprimir si es valida o no la blockchain, y el validate
-	//que tendría que preguntar en add, remove, lookup y modify, porque si le pongo el mismo que el de
-	//linea de comando cada vez que haga una operacion me va a imprimir si es válida o no la cadena
-	//Obvio que si se les ocurre algo cambienlo
+	private List<Integer> lookUp(T elem) {
+		List<Integer> list = this.avl.contains(elem);
+		return list;
+	}
+
+	// Ya se que es código repetido con validate pero no sé distinguir los casos
+	// entre el validate que
+	// me piden por linea de comando y tengo que imprimir si es valida o no la
+	// blockchain, y el validate
+	// que tendría que preguntar en add, remove, lookup y modify, porque si le pongo
+	// el mismo que el de
+	// linea de comando cada vez que haga una operacion me va a imprimir si es
+	// válida o no la cadena ( no tiene
+	// sentido, para algo esta validate como metodo)
+	// Obvio que si se les ocurre algo cambienlo
 	private boolean isValid() {
 		String toCmp = "";
 		for (int i = 0; i < zeros; i++)
@@ -187,7 +208,7 @@ public class BlockChain<T> {
 		return valid ? true : false;
 
 	}
-	
+
 	public void validate() {
 		String toCmp = "";
 		for (int i = 0; i < zeros; i++)
@@ -197,11 +218,19 @@ public class BlockChain<T> {
 
 		System.out.print("Blockchain status: ");
 		System.out.println(valid ? "valid" : "invalid");
-		
+
+	}
+
+	private boolean validate(Block<T> current, String s) {
+		if (current == null)
+			return true;
+		if (!current.hash.substring(0, this.zeros).equals(s))
+			return false;
+		return validate(current.prevBlock, s);
 	}
 
 	public void modify(String command) throws NoSuchAlgorithmException {
-		if(this.isValid()) {
+		if (this.isValid()) {
 			boolean flag = true;
 			int i = 7;
 			int acu = 0;
@@ -214,42 +243,15 @@ public class BlockChain<T> {
 				}
 				i++;
 			}
-	
+
 			if (acu > this.last.index || !flag) {
 				System.out.println("The data entered is not valid");
 			} else {
 				modify(acu, command.substring(i));
 			}
 		} else {
-			System.out.println("Invalid BlockChain");
+			System.out.println("Invalid BlockChain. You can not apply any operation on it");
 		}
-	}
-
-	private boolean add(T elem) {
-		if (last == null)
-			return this.avl.insert(elem, 0);
-		else
-			return this.avl.insert(elem, last.index + 1);
-	}
-
-	private boolean remove(T elem) {
-		if (last == null)
-			return this.avl.remove(elem, 0);
-		else
-			return this.avl.remove(elem, last.index + 1);
-	}
-
-	private List<Integer> lookUp(T elem) {
-		List<Integer> list = this.avl.contains(elem);
-		return list;
-	}
-
-	private boolean validate(Block<T> current, String s) {
-		if (current == null)
-			return true;
-		if (!current.hash.substring(0, this.zeros).equals(s))
-			return false;
-		return validate(current.prevBlock, s);
 	}
 
 	private void modify(int n, String filePath) throws NoSuchAlgorithmException {
@@ -279,22 +281,34 @@ public class BlockChain<T> {
 			current.setData(op);
 
 			modifyRecursive(n, last);
-			
+
 		} catch (IOException ex) {
 			System.out.println("Could not find file");
 			return;
 		}
 
+		printBC();
 	}
-	
+
 	private String modifyRecursive(int n, Block<T> current) throws NoSuchAlgorithmException {
-		if(current.index == n) {
+		if (current.index == n) {
 			current.reHash();
 			return current.hash;
 		}
 		current.prevHash = modifyRecursive(n, current.prevBlock);
 		current.reHash();
 		return current.hash;
+	}
+
+	private void printBC() {
+		System.out.println("The BlockChain after it has been modified is: \n");
+		Block<T> block = this.last;
+
+		while (block != null) {
+			block.printBlock();
+			block = block.prevBlock;
+		}
+
 	}
 
 }

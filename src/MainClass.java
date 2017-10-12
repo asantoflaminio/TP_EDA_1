@@ -42,7 +42,7 @@ public class MainClass {
 		while (scan.hasNext()) {
 			String command = scan.nextLine();
 
-			if (command.equals("exit")) 
+			if (command.equals("exit"))
 				break;
 
 			if (blockChain != null) {
@@ -64,7 +64,7 @@ public class MainClass {
 				}
 			} else if (command.length() > 5 && command.substring(0, 6).toLowerCase().equals("zeros ")) {
 				Integer value = fs.convert(command.substring(6));
-				if(value != null) {
+				if (value != null) {
 					Zeros<Integer> zeros = new Zeros<Integer>(value);
 					blockChain = zeros.createBlockchain(cmp);
 				} else {

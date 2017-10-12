@@ -32,7 +32,6 @@ public class List<T> implements Iterable<T> {
 		System.out.println();
 
 	}
-	
 
 	@Override
 	public Iterator<T> iterator() {
@@ -40,7 +39,7 @@ public class List<T> implements Iterable<T> {
 	}
 
 	private class MyListIterator<T> implements Iterator<T> {
-		
+
 		private Node<T> next;
 
 		public MyListIterator(Node<T> first) {
