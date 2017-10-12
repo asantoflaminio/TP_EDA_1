@@ -1,4 +1,9 @@
 package AVL;
+/*
+ * Purpose is to test how much time it takes to complete operations with 
+ * different numbers of zeros.
+ * 
+ */
 
 import static org.junit.Assert.*;
 
@@ -21,14 +26,12 @@ public class TestBlockChain {
 	@Before
 	public void setUp() throws Exception {
 
-		// chain = new BlockChain<Integer>(2,cmp);
+		//
 
 	}
 
 	/*
-	 * Quiero testear cuanto toma realizar operaciones cuando la cantidad de ceros
-	 * es alta. En este caso probaremos con 5 ceros y un tiempo mmaximo de 10
-	 * segundos para realizar 4 operaciones.
+	 * For five zeros 
 	 */
 	@Test(timeout = 10000)
 	public void testSpeed5() throws NoSuchAlgorithmException {
@@ -41,7 +44,7 @@ public class TestBlockChain {
 	}
 
 	/*
-	 * Para tres ceros y cuatro operaciones el tiempo es maximo 3 segundos.
+	 * For three zeros and four operations time limit is 3s.
 	 */
 	@Test(timeout = 3000)
 	public void testSpeed3() throws NoSuchAlgorithmException {
@@ -54,7 +57,7 @@ public class TestBlockChain {
 	}
 
 	/*
-	 * Para 1 cero y cuatro operaciones el tiempo maximo es 0.1 segundos.
+	 * For one zero and four operations time limit is 0.1s.
 	 */
 	@Test(timeout = 100)
 	public void testSpeed1() throws NoSuchAlgorithmException {
@@ -67,7 +70,8 @@ public class TestBlockChain {
 	}
 
 	/*
-	 * Para 6 ceros y una operación el tiempo maximo es 15 minutos.
+	 * 
+	 * For 6 zeros and one operation time limit is 10s.
 	 */
 	@Test(timeout = 10000)
 	public void testSpeed6() throws NoSuchAlgorithmException {
@@ -77,15 +81,5 @@ public class TestBlockChain {
 
 	}
 
-	/*
-	 * public void testLookUp() throws NoSuchAlgorithmException{ chain = new
-	 * BlockChain<Integer>(3,cmp); chain.add("add", 5); chain.add("remove", 5);
-	 * chain.add("add", 4); chain.lookUp("lookUp", 5); }
-	 * 
-	 * @Test public void testModify() throws NoSuchAlgorithmException{ chain = new
-	 * BlockChain<Integer>(3,cmp); chain.add("add", 5); chain.add("remove", 5);
-	 * chain.add("add", 4); chain.modify("modify"); assertEquals(false,
-	 * chain.validate()); }
-	 */
-
+	
 }
