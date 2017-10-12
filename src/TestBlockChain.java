@@ -67,13 +67,13 @@ public class TestBlockChain {
 	}
 
 	/*
-	 * Para 7 ceros y dos operaciones el tiempo maximo es 15 minutos.
+	 * Para 6 ceros y una operación el tiempo maximo es 15 minutos.
 	 */
-	@Test(timeout = 900000)
-	public void testSpeed7() throws NoSuchAlgorithmException {
-		chain = new BlockChain<Integer>(7, cmp);
-		chain.add("add", 9);
-		chain.remove("remove", 9);
+	@Test(timeout = 10000)
+	public void testSpeed6() throws NoSuchAlgorithmException {
+		chain = new BlockChain<Integer>(6, cmp);
+		chain.add("add", 1);
+
 
 	}
 
