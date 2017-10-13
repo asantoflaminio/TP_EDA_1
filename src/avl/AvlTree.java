@@ -196,7 +196,6 @@ public class AvlTree<T> {
 			}
 		}
 		else {
-			System.out.println("Estoy x hacer null a:" + current.value);
 			result.value = current.value;
 			result.blocksModified = current.blocksModified;
 			current = delete(current,current.value,blockIndex, flag);
