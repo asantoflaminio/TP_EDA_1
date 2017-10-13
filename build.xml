@@ -1,0 +1,29 @@
+<project name="tpe" default="dist" basedir=".">  
+
+	<!-- Compila el proyecto, deja los archivos class en el directorio bin -->    
+	<target name="compile">     
+		<mkdir dir="bin"/>     
+		<javac srcdir="src" destdir="bin" classpath="lib/hamcrest-core-1.3.jar;lib/junit-4.12.jar" includeantruntime="false"/>
+	</target>   
+
+	<!-- Crea la documentacion en formato Javadoc, en el directorio doc. -->   
+	<target name="doc" depends="compile">     
+		<javadoc sourcepath="src" destdir="doc" classpath="lib/hamcrest-core-1.3.jar;lib/junit-4.12.jar"/>
+	</target>  
+
+	<!-- Crea el jar ejecutable con todo el proyecto compilado. -->   
+	<target name="dist" depends="compile, doc">     
+		<jar destfile="tpe.jar" basedir="bin">       
+			<manifest>         
+				<attribute name="Main-Class" value="main.MainClass"/>                 
+			</manifest>     
+		</jar>   
+	</target>   
+
+	<!-- Borra todos los archivos generados luego de compilar. -->   
+	<target name="clean">     
+		<delete dir="bin"/>     
+		<delete dir="doc" />     
+		<delete file="tpe.jar" />   
+	</target> 
+</project> 
