@@ -36,6 +36,7 @@ public class BlockChain<T> {
 		private String data;
 		private boolean validate;
 		private Block<T> prevBlock;
+		private int hashTree;
 
 		public Block(String data, Block<T> prevBlock, boolean val) {
 			this.data = data;
@@ -48,7 +49,6 @@ public class BlockChain<T> {
 				this.index = 0;
 			}
 			this.validate = val;
-
 		}
 
 		public void setData(String data) {
@@ -62,10 +62,11 @@ public class BlockChain<T> {
 			System.out.println("Nonce: " + this.nonce);
 			System.out.println("Operation: " + this.data);
 			System.out.println(this.validate ? "Successful operation" : "Failed operation");
-			avl.printInfo();
+			System.out.println("Hash tree: " + this.hashTree);
+			avl.printByLevels();
 			System.out.println("----------------------------------------------------------");
 		}
-
+		
 		private void generateHash(int zeros) throws NoSuchAlgorithmException {
 
 			String s = "";
@@ -125,7 +126,9 @@ public class BlockChain<T> {
 				}
 
 				this.last.generateHash(this.zeros);
-				this.last.printBlock();
+				this.last.hashTree = this.avl.getHashCode();	
+				this.last.printBlock();	
+				
 			} else {
 				System.out.println("Invalid command");
 			}
@@ -152,6 +155,7 @@ public class BlockChain<T> {
 				}
 
 				this.last.generateHash(this.zeros);
+				this.last.hashTree = this.avl.getHashCode();
 				this.last.printBlock();
 			} else {
 				System.out.println("Invalid command");
@@ -268,11 +272,6 @@ public class BlockChain<T> {
 		try {
 			String op = new String(Files.readAllBytes(Paths.get(filePath)));
 			System.out.println("The new operation in block " + n + " is: " + op);
-			/*
-			 * NO SE si hay que chequear si esa operacion es valida o no yo creo que no
-			 * porque da igual y la blockchain se rompe pongas lo q pongas pueden ponerte
-			 * cualquier cosa y se tiene q romper entiendo yo
-			 */
 			Block<T> current = this.last;
 			int flag = 0;
 			while (current != null && flag == 0) {
