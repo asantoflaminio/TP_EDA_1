@@ -77,8 +77,9 @@ public class MainClass {
 				}
 				scan.close();
 			}
-		}
+		} else {
 
-		System.out.println("Invalid command: java​ ​-jar​ ​tpe.jar​ ​zeros​ ​number");
+			System.out.println("Invalid command: java​ ​-jar​ ​tpe.jar​ ​zeros​ ​number");
+		}
 	}
 }
