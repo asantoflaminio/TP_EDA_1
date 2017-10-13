@@ -1,6 +1,5 @@
-package avl;
+package tPfinal;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 
@@ -147,8 +146,8 @@ public class AvlTree<T> {
 				else
 					return current.rightTree;
 			} else {
-				Node<T> result = getMaxLeaf(current.leftTree);
-				current.leftTree = delete(current.leftTree, result.value, blockIndex, flag);
+				Node<T> result = new Node<T>(current.value);
+				current.leftTree = getMaxLeaf(current.leftTree,result,blockIndex,flag);
 				if (!sameSons(auxLeft, auxRight, result)) {
 					result.blocksModified.add(blockIndex);
 				}
@@ -164,14 +163,45 @@ public class AvlTree<T> {
 			else
 				current.rightTree = delete(current.rightTree, elem, blockIndex, flag);
 		}
+
+		current.height = getHeight(current);
+		current = balanceTree(current, blockIndex);
+		
 		if (!sameSons(auxLeft, auxRight, current)) {
 			current.blocksModified.add(blockIndex);
 		}
-		current.height = getHeight(current);
-		current = balanceTree(current, blockIndex);
 
 		return current;
 
+	}
+	
+	/**
+	 * 
+	 * @param current
+	 *            Nodo en cuestion de la funcion recursiva
+	 * @return Retorna el nodo current La funcion sirve para buscar el nodo que
+	 *         tenga el valor maximo del subArbol izquierdo del nodo que llamo a la
+	 *         funcion y eliminarlo llevando consigo una copia y borrando el encontrado
+	 */
+
+	private Node<T> getMaxLeaf(Node<T> current, Node<T> result, int blockIndex, Check flag) {
+		Node<T> auxLeft = current.leftTree;
+		Node<T> auxRight = current.rightTree;
+		if (current.rightTree != null) {
+			current.rightTree = getMaxLeaf(current.rightTree,result,blockIndex,flag);
+			current.height = getHeight(current);
+			current = balanceTree(current, blockIndex);	
+			if (!sameSons(auxLeft, auxRight, current)) {
+				current.blocksModified.add(blockIndex);
+			}
+		}
+		else {
+			System.out.println("Estoy x hacer null a:" + current.value);
+			result.value = current.value;
+			result.blocksModified = current.blocksModified;
+			current = delete(current,current.value,blockIndex, flag);
+		}
+		return current;
 	}
 
 	/**
@@ -279,21 +309,6 @@ public class AvlTree<T> {
 		return false;
 	}
 
-	/**
-	 * 
-	 * @param current
-	 *            Nodo en cuestion de la funcion recursiva
-	 * @return Retorna el nodo current La funcion sirve para buscar el nodo que
-	 *         tenga el valor maximo del subArbol izquierdo del nodo que llamo a la
-	 *         funcion
-	 */
-
-	private Node<T> getMaxLeaf(Node<T> current) {
-		if (current.rightTree != null)
-			return getMaxLeaf(current.rightTree);
-		Node<T> result = current;
-		return result;
-	}
 
 	/**
 	 * 
@@ -347,116 +362,7 @@ public class AvlTree<T> {
 		big.height = getHeight(big);
 		return big;
 	}
-
-	public void print() {
-		ArrayList<Node<T>> ls = new ArrayList<>();
-		if (this.root != null) {
-			ls.add(this.root);
-		}
-		Node<T> aux;
-		while (!ls.isEmpty()) {
-			aux = ls.get(0);
-			ls.remove(0);
-			if (aux.leftTree != null) {
-				ls.add(aux.leftTree);
-			}
-			if (aux.rightTree != null) {
-				ls.add(aux.rightTree);
-			}
-			System.out.println(aux.value + " height: " + aux.height);
-
-			System.out.println(aux.value + " height: " + aux.height);
-		}
-
-	}
-
-	public int getHeight() {
-		int result = -1 + calculateHeight(root);
-		return result;
-	}
-
-	private int calculateHeight(Node<T> node) {
-		if (node == null)
-			return 0;
-		return 1 + Math.max(calculateHeight(node.leftTree), calculateHeight(node.rightTree));
-	}
-
-	public void printByLevels() {
-		for (int i = 0; i <= this.getHeight(); i++) {
-			System.out.print("Nodes at level " + i + ": ");
-			printLevel(0, i, root);
-			System.out.println();
-		}
-	}
-
-	private void printLevel(int currLevel, int index, Node<T> node) {
-		if (node == null)
-			return;
-		if (currLevel != index) {
-			printLevel(currLevel + 1, index, node.leftTree);
-			printLevel(currLevel + 1, index, node.rightTree);
-		} else {
-			System.out.print(node.value + " ");
-		}
-		return;
-
-	}
-
-	public boolean isBTS() {
-		LinkedList<T> list = new LinkedList<T>();
-		if (!isBTS(root, list))
-			return false;
-		for (int i = 0; i < list.size() - 1; i++) {
-			if (cmp.compare(list.get(i), list.get(i + 1)) > 0)
-				return false;
-		}
-		return true;
-	}
-
-	private boolean isBTS(Node<T> node, LinkedList<T> list) {
-		if (node == null)
-			return true;
-		boolean left = true;
-		boolean right = true;
-		if (node.leftTree != null) {
-			if (cmp.compare(node.value, node.leftTree.value) < 0)
-				return false;
-			left = isBTS(node.leftTree, list);
-		}
-		list.add(node.value);
-		if (node.rightTree != null) {
-			if (cmp.compare(node.value, node.rightTree.value) > 0)
-				return false;
-			right = isBTS(node.rightTree, list);
-		}
-		return left && right;
-	}
-
-	public boolean isAVL() {
-		return isAVL(root);
-	}
-
-	private boolean isAVL(Node<T> node) {
-		if (node == null)
-			return true;
-		int leftH;
-		int rightH;
-		leftH = getNodeHeight(node.leftTree);
-		rightH = getNodeHeight(node.rightTree);
-		if ((leftH - rightH) >= -1 && (leftH - rightH) <= 1) {
-			return isAVL(node.leftTree) && isAVL(node.rightTree);
-		}
-		System.out.println("Returns false by the node: " + node.value);
-		return false;
-
-	}
-
-	private int getNodeHeight(Node<T> node) {
-		if (node == null)
-			return 0;
-		return 1 + Math.max(getNodeHeight(node.leftTree), getNodeHeight(node.rightTree));
-	}
-
+	
 	/**
 	 * Busca el elemento pedido en el arbol
 	 * 
@@ -495,6 +401,84 @@ public class AvlTree<T> {
 
 	}
 
+	public int getHeight() {
+		int result = -1 + calculateHeight(root);
+		return result;
+	}
+
+	private int calculateHeight(Node<T> node) {
+		if (node == null)
+			return 0;
+		return 1 + Math.max(calculateHeight(node.leftTree), calculateHeight(node.rightTree));
+	}
+
+	public void printByLevels() {
+		for (int i = 0; i <= this.getHeight(); i++) {
+			System.out.print("Nodes at level " + i + ": ");
+			printLevel(0, i, root);
+			System.out.println();
+		}
+	}
+
+	private void printLevel(int currLevel, int index, Node<T> node) {
+		if (node == null)
+			return;
+		if (currLevel != index) {
+			printLevel(currLevel + 1, index, node.leftTree);
+			printLevel(currLevel + 1, index, node.rightTree);
+		} else {
+			System.out.print(node.value + " ");
+		}
+		return;
+	}
+
+	public boolean isBTS() {
+		LinkedList<T> list = new LinkedList<T>();
+		if (!isBTS(root, list))
+			return false;
+		for (int i = 0; i < list.size() - 1; i++) {
+			if (cmp.compare(list.get(i), list.get(i + 1)) > 0)
+				return false;
+		}
+		return true;
+	}
+
+	private boolean isBTS(Node<T> node, LinkedList<T> list) {
+		if (node == null)
+			return true;
+		boolean left = true;
+		boolean right = true;
+		if (node.leftTree != null) {
+			if (cmp.compare(node.value, node.leftTree.value) < 0)
+				return false;
+			left = isBTS(node.leftTree, list);
+		}
+		list.add(node.value);
+		if (node.rightTree != null) {
+			if (cmp.compare(node.value, node.rightTree.value) > 0)
+				return false;
+			right = isBTS(node.rightTree, list);
+		}
+		return left && right;
+	}
+
+	public boolean isAVL() {
+		return isAVL(root);
+	}
+
+	private boolean isAVL(Node<T> current) {
+		if (current == null)
+			return true;
+		if(getBalance(current) < -1 || getBalance(current) > 1) {
+			System.out.println("Returns false by the node: " + current.value);
+			return false;
+		}
+		return isAVL(current.leftTree) && isAVL(current.rightTree);
+
+	}
+
+
+
 	public void showModifications() {
 		showModificationsOnNodes(this.root);
 	}
@@ -507,22 +491,6 @@ public class AvlTree<T> {
 		showModificationsOnNodes(current.leftTree);
 		showModificationsOnNodes(current.rightTree);
 
-	}
-
-	public void printInfo() {
-		if (this.root != null) {
-			System.out.println("AVL TREE: ");
-			printInfo(this.root);
-		}
-	}
-
-	
-	private void printInfo(Node<T> current) {
-		System.out.println("Node value: " + current.value + " - My height is: " + current.height);
-		if (current.leftTree != null)
-			printInfo(current.leftTree);
-		if (current.rightTree != null)
-			printInfo(current.rightTree);
 	}
 
 }
