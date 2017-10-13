@@ -5,9 +5,10 @@ import org.junit.Test;
 
 import blockchain.BlockChain;
 
+
 /*
- * Purpose is to test how much time it takes to complete operations with 
- * different numbers of zeros.
+ * El objetivo es testear cuanto tiempo toma completar operaciones luego
+ * de haber indicado la funcion zeros con diferentes numeros.
  * 
  */
 
@@ -34,7 +35,7 @@ public class TestBlockChain {
 	}
 
 	/*
-	 * For five zeros 
+	 * Para cinco ceros y cuatro operaciones el tiempo limite es 10s. 
 	 */
 	@Test(timeout = 10000)
 	public void testSpeed5() throws NoSuchAlgorithmException {
@@ -47,7 +48,7 @@ public class TestBlockChain {
 	}
 
 	/*
-	 * For three zeros and four operations time limit is 3s.
+	 * Para tres ceros y cuatro opearaciones el tiempo limite es 3s. 
 	 */
 	@Test(timeout = 3000)
 	public void testSpeed3() throws NoSuchAlgorithmException {
@@ -59,8 +60,8 @@ public class TestBlockChain {
 
 	}
 
-	/*
-	 * For one zero and four operations time limit is 0.1s.
+	/*	
+	 * Para un cero y cuatro operaciones el tiempo limite es 0.1s.
 	 */
 	@Test(timeout = 100)
 	public void testSpeed1() throws NoSuchAlgorithmException {
@@ -74,7 +75,7 @@ public class TestBlockChain {
 
 	/*
 	 * 
-	 * For 6 zeros and one operation time limit is 10s.
+	 * Para seis ceros y una operacion el tiempo limite es 10s.
 	 */
 	@Test(timeout = 10000)
 	public void testSpeed6() throws NoSuchAlgorithmException {
