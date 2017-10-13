@@ -491,5 +491,19 @@ public class AvlTree<T> {
 		showModificationsOnNodes(current.rightTree);
 
 	}
-
+	
+	public int getHashCode() {
+		return getHashCode(this.root).hashCode();
+	}
+	
+	public String getHashCode(Node<T> current) {
+		if(current == null)
+			return "";
+		String s = current.value.toString();
+		s += "-";
+		s += getHashCode(current.leftTree);
+		s += getHashCode(current.rightTree);
+		return s;
+	}
+	
 }
