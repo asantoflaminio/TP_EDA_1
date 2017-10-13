@@ -67,6 +67,10 @@ public class BlockChain<T> {
 			System.out.println("----------------------------------------------------------");
 		}
 		
+		/*
+		 * @param zeros cantidad de ceros que debe tener el elemento al principio del hash
+		 */
+		
 		private void generateHash(int zeros) throws NoSuchAlgorithmException {
 
 			String s = "";
@@ -78,17 +82,16 @@ public class BlockChain<T> {
 			String str = "";
 			while (!flag) {
 				/*
-				 * Coloco el numero magico a utilizar delante del que seria el String
-				 * representativo del arbol
+				 * Poner el nonce al principio del String de prueba
 				 */
 				String aux = new String(i + "-" + this.prevHash + "-" + this.index + "-" + this.data);
 				/*
-				 * Creo el Hash del
+				 * Hasheo el String de prueba
 				 */
 				str = getHash(aux);
 
 				/*
-				 * Verifico que los n primeros bytes sean 0
+				 * Verifico que los primeros "zeros" caracteres sean 0
 				 */
 				if (str.substring(0, zeros).equals(s)) {
 					flag = true;
@@ -98,7 +101,8 @@ public class BlockChain<T> {
 			this.nonce = i;
 			this.hash = str;
 		}
-
+		
+		
 		private void reHash() throws NoSuchAlgorithmException {
 			String aux = new String(this.nonce + "-" + this.prevHash + "-" + this.index + "-" + this.data);
 			this.hash = getHash(aux);
@@ -114,7 +118,15 @@ public class BlockChain<T> {
 		}
 
 	}
-
+	
+	/**
+	 * @param command 
+	 * 		El string que dice add
+	 * @param elem
+	 * 			Valor del nodo con el que se opera. 
+	 * 
+	 * Agrega al árbol un nodo con el elemento y crea un nuevo bloque.
+	 */
 	public void add(String command, T elem) throws NoSuchAlgorithmException {
 		if (this.isValid()) {
 			if (elem != null) {
@@ -144,7 +156,16 @@ public class BlockChain<T> {
 		else
 			return this.avl.insert(elem, last.index + 1);
 	}
-
+	
+	
+	/**
+	 * @param command 
+	 * 		El string que dice remove
+	 * @param elem
+	 * 			Valor del nodo con el que se opera. 
+	 * 
+	 * Saca del arbol un elemento y crea un nuevo bloque. 
+	 */
 	public void remove(String command, T elem) throws NoSuchAlgorithmException {
 		if (this.isValid()) {
 			if (elem != null) {
@@ -171,7 +192,17 @@ public class BlockChain<T> {
 		else
 			return this.avl.remove(elem, last.index + 1);
 	}
-
+	
+	/**
+	 * @param command 
+	 * 		El string que dice lookUp
+	 * @param elem
+	 * 			Valor del nodo con el que se opera. 
+	 * 
+	 * Imprime todos los indices de bloques que modificaron al elemento elem. 
+	 * Los bloques que modificaron a tal elemento serían cuando el mismo se agrega, cuando se 
+	 * agrega o modifica algún hijo y cuando el elemento participa en alguna rotacion.
+	 */
 	public void lookUp(String command, T elem) {
 		if (this.isValid()) {
 			if (elem != null) {
@@ -197,16 +228,7 @@ public class BlockChain<T> {
 		return list;
 	}
 
-	// Ya se que es codigo repetido con validate pero no se distinguir los casos
-	// entre el validate que
-	// me piden por linea de comando y tengo que imprimir si es valida o no la
-	// blockchain, y el validate
-	// que tendria que preguntar en add, remove, lookup y modify, porque si le pongo
-	// el mismo que el de
-	// linea de comando cada vez que haga una operacion me va a imprimir si es
-	// valida o no la cadena ( no tiene
-	// sentido, para algo esta validate como metodo)
-	// Obvio que si se les ocurre algo cambienlo
+
 	private boolean isValid() {
 		String toCmp = "";
 		for (int i = 0; i < zeros; i++)
@@ -217,7 +239,11 @@ public class BlockChain<T> {
 		return valid ? true : false;
 
 	}
-
+	
+	/**
+	 * Devuelve si la BlockChain sigue siendo valida, es decir comprueba
+	 * si la cantidad de ceros iniciales en los hashes es la correcta.
+	 */
 	public void validate() {
 		String toCmp = "";
 		for (int i = 0; i < zeros; i++)
@@ -237,7 +263,13 @@ public class BlockChain<T> {
 			return false;
 		return validate(current.prevBlock, s);
 	}
-
+	
+	/**
+	 * @param command 
+	 * 		El string que dice modify
+	 * 
+	 *  Chequea que el comando sea valido.
+	 */
 	public void modify(String command) throws NoSuchAlgorithmException {
 		if (this.isValid()) {
 			boolean flag = true;
@@ -262,12 +294,25 @@ public class BlockChain<T> {
 			System.out.println("Invalid BlockChain. You can not apply any operation on it");
 		}
 	}
-
+	
+	/**
+	 * @param n 
+	 * 		El indice del bloque a modificar.
+	 * @param filePath
+	 * 			Lugar donde se encuentra el archivo con la nueva operacion. 
+	 * 
+	 * Modifica el contenido de un bloque y luego su hash para romper la cadena. Para eso llama
+	 * luego a la funcion modifyRecursive.
+	 */
 	private void modify(int n, String filePath) throws NoSuchAlgorithmException {
-
+		
+		if(filePath.charAt(1)!= '[' && filePath.charAt(filePath.length()-1) != ']') {
+			System.out.println("Syntax error");
+			return;
+		}
 		// Saco los corchetes
 		filePath = filePath.substring(2, filePath.length() - 1);
-
+		
 		System.out.println("Taking data from: " + filePath);
 		try {
 			String op = new String(Files.readAllBytes(Paths.get(filePath)));
@@ -292,7 +337,15 @@ public class BlockChain<T> {
 
 		printBlockChain();
 	}
-
+	
+	/**
+	 * @param n
+	 * 		Indice del bloque a cambiarle el hash.
+	 * @param elem
+	 * 			Valor del nodo con el que se opera. 
+	 * 
+	 * Funcion recursiva. Modifica el hash del bloque y de todos los que siguen. 
+	 */
 	private String modifyRecursive(int n, Block<T> current) throws NoSuchAlgorithmException {
 		if (current.index == n) {
 			current.reHash();
