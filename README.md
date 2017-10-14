@@ -8,7 +8,7 @@ Primero me armo una carpeta tpe que contendrá el contenido del repositorio de g
 > cd tpe
 > ant
 ```
-El comando ant compila y contruye el proyecto. Esto crea un archivo .jar dentro de la carpeta tpe. 
+El comando ant compila y construye el proyecto. Esto crea un archivo .jar dentro de la carpeta tpe. 
 Por último escribo lo siguiente para ejecutar el programa:
 
 ```
