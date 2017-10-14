@@ -1,14 +1,14 @@
 # TP_EDA_1
-Implementacion de un arbol AVL sobre una Blockchain
+Implementacion de un árbol AVL sobre una Blockchain
 
 # Para correr el proyecto
->
->
->
+```
+java -jar tpe.jar zeros number
+```
 
 # Integrantes:
-* Della Sala, Rocio
-* Giorgi, Maria Florencia
-* Heimann, Matias
-* Rodriguez, Ariel Andres
+* Della Sala, Rocío
+* Giorgi, María Florencia
+* Heimann, Matías
+* Rodriguez, Ariel Andrés
 * Santoflaminio, Alejandro
